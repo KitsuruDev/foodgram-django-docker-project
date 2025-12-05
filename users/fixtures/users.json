@@ -1,0 +1,78 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$RGfR1TF61AGnWDTkzyo63O$KkzvMIBgRhdKDicuprymOocpyjLE2sWb4bYpiyyobI4=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Админ",
+      "last_name": "Фудграм",
+      "email": "admin@foodgram.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$U7MmG0qm7Kq2PBYCoPW6Zf$/iEaUNx9obRX+ZgM5F5klSHm9Yqub06B3tiVNx/TgTo=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "user1",
+      "first_name": "Иван",
+      "last_name": "Петров",
+      "email": "user1@foodgram.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$qtEaOUfkyio4fW7blEuNVR$Jo3luf/VtdGGauruKevq1XtU52casWBDBb4rDbIs26g=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "user2",
+      "first_name": "Мария",
+      "last_name": "Сидорова",
+      "email": "user2@foodgram.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$lBYl4oIsCkTAjgS38QGcVk$3MmlF0HlGkyLL/BBqfXezsjqpy1Q8kMvY7L2xVdtjGc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "chef",
+      "first_name": "Шеф",
+      "last_name": "Поваров",
+      "email": "chef@foodgram.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]

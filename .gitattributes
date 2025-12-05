@@ -1,0 +1,47 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Python files
+*.py diff=python
+
+# Django templates
+*.html diff=html
+*.htm diff=html
+
+# JavaScript/TypeScript
+*.js diff=javascript
+*.jsx diff=javascript
+*.ts diff=typescript
+*.tsx diff=typescript
+
+# JSON files
+*.json diff=json
+
+# CSS
+*.css diff=css
+
+# Images - treat as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+
+# Archives and packages
+*.zip binary
+*.gz binary
+*.tar binary
+
+# Force Unix line endings for shell scripts
+*.sh text eol=lf
+
+# Force Unix line endings for Python
+*.py text eol=lf
+
+# Force Unix line endings for configuration files
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
