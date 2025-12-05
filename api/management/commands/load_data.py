@@ -19,27 +19,6 @@ class Command(BaseCommand):
             help='Пропустить генерацию рецептов',
         )
 
-    def load_fixture(self, fixture_name):
-        """Пытается загрузить фикстуру разными способами"""
-        methods = [
-            # Способ 1: Просто имя (стандартный Django)
-            lambda: call_command('loaddata', fixture_name),
-            # Способ 2: С указанием приложения
-            lambda: call_command('loaddata', f'{fixture_name}.json'),
-            # Способ 3: Полный путь для users
-            lambda: call_command('loaddata', os.path.join('users', 'fixtures', f'{fixture_name}.json')),
-            # Способ 4: Полный путь для recipes
-            lambda: call_command('loaddata', os.path.join('recipes', 'fixtures', f'{fixture_name}.json')),
-        ]
-        
-        for i, method in enumerate(methods):
-            try:
-                method()
-                return True, f"способ {i+1}"
-            except:
-                continue
-        return False, "все способы"
-
     def handle(self, *args, **options):
         skip_clear = options['skip_clear']
         skip_recipes = options['skip_recipes']
@@ -47,7 +26,7 @@ class Command(BaseCommand):
         # Очищаем БД если не пропущено
         if not skip_clear:
             self.stdout.write(self.style.WARNING('Очистка базы данных...'))
-            call_command('cleardata')
+            call_command('clear_data')
         
         self.stdout.write(self.style.WARNING('Загрузка фикстур...'))
         
@@ -61,25 +40,12 @@ class Command(BaseCommand):
         loaded_count = 0
         for fixture in fixtures:
             self.stdout.write(f"Загрузка {fixture}...")
-            success, method = self.load_fixture(fixture)
-            
-            if success:
-                self.stdout.write(self.style.SUCCESS(f'✓ Загружен {fixture} ({method})'))
+            try:
+                call_command('loaddata', f'{fixture}.json')
                 loaded_count += 1
-            else:
-                self.stdout.write(self.style.ERROR(f'✗ Не удалось загрузить {fixture}'))
-                # Показываем где ищем
-                if fixture == 'users':
-                    path = os.path.join(settings.BASE_DIR, 'users', 'fixtures', 'users.json')
-                else:
-                    path = os.path.join(settings.BASE_DIR, 'recipes', 'fixtures', f'{fixture}.json')
-                self.stdout.write(f"  Искали файл: {path}")
-                if os.path.exists(path):
-                    self.stdout.write("  ✓ Файл существует!")
-                else:
-                    self.stdout.write("  ✗ Файл не найден!")
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'✗ Не удалось загрузить {fixture}, ошибка: {e}'))
 
-        # Генерируем тестовые рецепты если не пропущено
         if not skip_recipes:
             self.stdout.write(self.style.WARNING('\nГенерация тестовых рецептов...'))
             try:
@@ -120,10 +86,5 @@ class Command(BaseCommand):
             self.stdout.write(f'  Логин: {user.username}')
             self.stdout.write(f'  Пароль: {user.username}')  # пароль = логину
             self.stdout.write(f'  Email: {user.email}')
-        
-        self.stdout.write('\n' + '='*50)
-        self.stdout.write(self.style.SUCCESS('ПРОЕКТ ГОТОВ К РАБОТЕ!'))
-        self.stdout.write('\nЗапустите сервер: python manage.py runserver')
-        self.stdout.write('Админка: http://localhost:8000/admin/')
-        self.stdout.write('API: http://localhost:8000/api/')
+            
         self.stdout.write('='*50)

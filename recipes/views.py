@@ -8,7 +8,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Recipe, Ingredient, Tag,
-    Favorite, ShoppingCart, Subscription
+    Favorite, ShoppingCart, Subscription,
+    RecipeIngredient
 )
 from .serializers import (
     RecipeSerializer, RecipeCreateUpdateSerializer,
