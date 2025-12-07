@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} рецепта - Foodgram{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="recipe-form-container">
+        <h2>{% if form.instance.pk %}Редактирование рецепта{% else %}Создание нового рецепта{% endif %}</h2>
+        
+        <form method="post" enctype="multipart/form-data" id="recipe-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-error">
+                Пожалуйста, исправьте ошибки ниже.
+            </div>
+            {% endif %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_title">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="error-text">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_cooking_time">{{ form.cooking_time.label }} (минуты)</label>
+                    {{ form.cooking_time }}
+                    {% if form.cooking_time.errors %}
+                    <div class="error-text">{{ form.cooking_time.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div class="error-text">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_image">{{ form.image.label }}</label>
+                {% if form.instance.image %}
+                <div class="current-image">
+                    <img src="{{ form.instance.image.url }}" alt="Current image" style="max-width: 200px;">
+                </div>
+                {% endif %}
+                {{ form.image }}
+                {% if form.image.errors %}
+                <div class="error-text">{{ form.image.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label>{{ form.tags.label }}</label>
+                <div class="tags-container">
+                    {% for checkbox in form.tags %}
+                    <label class="tag-checkbox">
+                        {{ checkbox.tag }}
+                        {{ checkbox.choice_label }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="ingredients-section">
+                <h3>Ингредиенты</h3>
+                <div id="ingredients-container">
+                    <!-- Ингредиенты будут добавляться динамически -->
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <select id="ingredient-select" class="form-control">
+                            <option value="">Выберите ингредиент</option>
+                            <!-- Заполнится через JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" id="ingredient-amount" placeholder="Количество" min="1" step="0.1">
+                    </div>
+                    
+                    <button type="button" class="btn-add-ingredient" onclick="addIngredient()">Добавить</button>
+                </div>
+                
+                <div id="selected-ingredients"></div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    {% if form.instance.pk %}Сохранить изменения{% else %}Создать рецепт{% endif %}
+                </button>
+                <a href="{% if form.instance.pk %}{% url 'recipes:detail' form.instance.pk %}{% else %}{% url 'index' %}{% endif %}" 
+                   class="btn-cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/recipe_form.js' %}"></script>
+{% endblock %}

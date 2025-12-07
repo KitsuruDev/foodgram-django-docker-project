@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name }} - Foodgram{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if profile_user.profile.avatar %}
+                <img src="{{ profile_user.profile.avatar.url }}" alt="Аватар {{ profile_user.username }}">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию">
+            {% endif %}
+            
+            {% if user == profile_user %}
+            <button class="btn-change-avatar" onclick="document.getElementById('avatar-input').click()">
+                Изменить фото
+            </button>
+            <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1>{{ profile_user.get_full_name }}</h1>
+            <p class="username">@{{ profile_user.username }}</p>
+            
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-number">{{ recipes_count }}</span>
+                    <span class="stat-label">рецептов</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">{{ followers_count }}</span>
+                    <span class="stat-label">подписчиков</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">{{ following_count }}</span>
+                    <span class="stat-label">подписок</span>
+                </div>
+            </div>
+            
+            {% if user.is_authenticated and user != profile_user %}
+            <button class="subscribe-btn" data-author-id="{{ profile_user.id }}">
+                {% if is_subscribed %}✓ Подписан{% else %}＋ Подписаться{% endif %}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="profile-tabs">
+        <button class="tab-btn active" data-tab="recipes">Рецепты</button>
+        {% if user == profile_user %}
+        <button class="tab-btn" data-tab="favorites">Избранное</button>
+        {% endif %}
+    </div>
+    
+    <div class="tab-content">
+        <div id="tab-recipes" class="tab-pane active">
+            <div class="recipe-grid">
+                {% for recipe in recipes %}
+                    {% include 'recipes/recipe_card.html' %}
+                {% empty %}
+                <p class="empty-message">Пользователь пока не добавил рецептов</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if user == profile_user %}
+        <div id="tab-favorites" class="tab-pane">
+            <div class="recipe-grid">
+                {% for recipe in favorite_recipes %}
+                    {% include 'recipes/recipe_card.html' %}
+                {% empty %}
+                <p class="empty-message">Нет избранных рецептов</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+        
+        // Удаляем active у всех кнопок и панелей
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        // Добавляем active текущим элементам
+        this.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

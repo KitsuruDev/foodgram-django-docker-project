@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ошибка сервера - Foodgram{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-content">
+        <h1>500</h1>
+        <h2>Внутренняя ошибка сервера</h2>
+        <p>Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.</p>
+        <a href="{% url 'index' %}" class="btn-primary">На главную</a>
+    </div>
+</div>
+
+<style>
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    text-align: center;
+}
+
+.error-content h1 {
+    font-size: 120px;
+    color: #f44336;
+    margin-bottom: 20px;
+}
+
+.error-content h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.error-content p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.btn-primary {
+    display: inline-block;
+    background: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Список покупок - Foodgram{% endblock %}
+
+{% block content %}
+<div class="container shopping-container">
+    <div class="shopping-header">
+        <h1>Список покупок</h1>
+        <div class="shopping-actions">
+            <button onclick="downloadShoppingList('txt')" class="btn-download">📥 TXT</button>
+            <button onclick="downloadShoppingList('pdf')" class="btn-download">📥 PDF</button>
+            <button onclick="clearShoppingList()" class="btn-clear">🗑️ Очистить список</button>
+        </div>
+    </div>
+    
+    {% if recipes %}
+    <div class="shopping-stats">
+        <p>Выбранных рецептов: <strong>{{ recipes_count }}</strong></p>
+        <p>Ингредиентов в списке: <strong>{{ ingredients_count }}</strong></p>
+    </div>
+    
+    <div class="shopping-content">
+        <div class="recipes-section">
+            <h2>Выбранные рецепты</h2>
+            <div class="selected-recipes">
+                {% for recipe in recipes %}
+                <div class="selected-recipe">
+                    <a href="{% url 'recipes:detail' recipe.id %}" class="recipe-link">
+                        {% if recipe.image %}
+                            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+                        {% endif %}
+                        <span>{{ recipe.title }}</span>
+                    </a>
+                    <button class="remove-recipe" data-recipe-id="{{ recipe.id }}">×</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="ingredients-section">
+            <h2>Список ингредиентов</h2>
+            <div class="ingredients-list">
+                {% for ingredient in ingredients %}
+                <div class="ingredient-item">
+                    <div class="ingredient-info">
+                        <span class="ingredient-name">{{ ingredient.name }}</span>
+                        <span class="ingredient-unit">{{ ingredient.measurement_unit }}</span>
+                    </div>
+                    <div class="ingredient-amount">
+                        <strong>{{ ingredient.total_amount|floatformat:"-2" }}</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <div class="empty-state">
+        <img src="{% static 'images/empty-cart.svg' %}" alt="Список покупок пуст">
+        <h3>Ваш список покупок пуст</h3>
+        <p>Добавляйте рецепты, нажав на кнопку "В покупки"</p>
+        <a href="{% url 'index' %}" class="btn-primary">Найти рецепты</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function clearShoppingList() {
+    if (confirm('Вы уверены, что хотите очистить весь список покупок?')) {
+        fetch('{% url "shopping_list:clear" %}', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+document.querySelectorAll('.remove-recipe').forEach(button => {
+    button.addEventListener('click', function() {
+        const recipeId = this.dataset.recipeId;
+        
+        fetch(`{% url "shopping_list:remove" %}?recipe_id=${recipeId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

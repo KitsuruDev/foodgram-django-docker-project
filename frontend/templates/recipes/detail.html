@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.title }} - Foodgram{% endblock %}
+
+{% block content %}
+<div class="container recipe-detail">
+    <div class="recipe-header">
+        <div class="recipe-image">
+            {% if recipe.image %}
+                <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+            {% else %}
+                <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image">
+            {% endif %}
+            
+            {% if user.is_authenticated %}
+            <div class="recipe-actions-top">
+                <button class="favorite-btn" data-recipe-id="{{ recipe.id }}">
+                    {% if recipe.is_favorited %}★ Убрать из избранного{% else %}☆ В избранное{% endif %}
+                </button>
+                <button class="shopping-btn" data-recipe-id="{{ recipe.id }}">
+                    {% if recipe.is_in_shopping_cart %}✓ В списке{% else %}＋ В покупки{% endif %}
+                </button>
+                
+                {% if user == recipe.author %}
+                <a href="{% url 'recipes:edit' recipe.id %}" class="btn-edit">Редактировать</a>
+                <button class="btn-delete" onclick="confirmDelete()">Удалить</button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="recipe-info">
+            <h1>{{ recipe.title }}</h1>
+            
+            <div class="recipe-meta">
+                <div class="author-info">
+                    <a href="{% url 'users:profile' recipe.author.username %}" class="author-link">
+                        {% if recipe.author.profile.avatar %}
+                            <img src="{{ recipe.author.profile.avatar.url }}" alt="Аватар" class="author-avatar">
+                        {% endif %}
+                        <span>{{ recipe.author.get_full_name }}</span>
+                    </a>
+                    {% if user.is_authenticated and user != recipe.author %}
+                    <button class="subscribe-btn" data-author-id="{{ recipe.author.id }}">
+                        {% if is_subscribed %}✓ Подписан{% else %}＋ Подписаться{% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div class="recipe-stats">
+                    <span class="stat-item">⏱️ {{ recipe.cooking_time }} мин</span>
+                    <span class="stat-item">👁️ {{ recipe.views }} просмотров</span>
+                    <span class="stat-item">❤️ {{ recipe.favorites_count }} в избранном</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="recipe-content">
+        <div class="ingredients-section">
+            <h2>Ингредиенты</h2>
+            <ul class="ingredients-list">
+                {% for ingredient in recipe.recipe_ingredients.all %}
+                <li>
+                    <span class="ingredient-name">{{ ingredient.ingredient.name }}</span>
+                    <span class="ingredient-amount">{{ ingredient.amount }} {{ ingredient.ingredient.measurement_unit }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="instructions-section">
+            <h2>Описание</h2>
+            <div class="recipe-description">
+                {{ recipe.description|linebreaks }}
+            </div>
+            
+            {% if recipe.tags.all %}
+            <div class="recipe-tags">
+                {% for tag in recipe.tags.all %}
+                <span class="tag-mini tag-{{ tag.name|slugify }}">{{ tag.name|slice:"3" }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="recipe-share">
+        <button class="btn-share" onclick="copyRecipeLink()">
+            🔗 Скопировать ссылку
+        </button>
+        <span id="copy-message" style="display: none; color: green; margin-left: 10px;">Ссылка скопирована!</span>
+    </div>
+</div>
+
+<script>
+function copyRecipeLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        const message = document.getElementById('copy-message');
+        message.style.display = 'inline';
+        setTimeout(() => {
+            message.style.display = 'none';
+        }, 2000);
+    });
+}
+
+function confirmDelete() {
+    if (confirm('Вы уверены, что хотите удалить этот рецепт?')) {
+        fetch('{% url "recipes:delete" recipe.id %}', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '{% url "index" %}';
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

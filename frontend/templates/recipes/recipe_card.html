@@ -1,0 +1,39 @@
+<div class="recipe-card">
+    <a href="{% url 'recipes:detail' recipe.id %}">
+        {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+        {% else %}
+            <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image">
+        {% endif %}
+        <h3>{{ recipe.title }}</h3>
+    </a>
+    <div class="recipe-card-info">
+        <p class="recipe-author">
+            Автор: <a href="{% url 'users:profile' recipe.author.username %}">
+                {{ recipe.author.get_full_name }}
+            </a>
+        </p>
+        <p class="recipe-time">⏱️ {{ recipe.cooking_time }} мин</p>
+        
+        {% if recipe.tags.all %}
+        <div class="recipe-tags-mini">
+            {% for tag in recipe.tags.all %}
+            <span class="tag-mini tag-{{ tag.name|slugify }}">{{ tag.name|slice:"3" }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if user.is_authenticated %}
+    <div class="recipe-card-actions">
+        <button class="favorite-btn {% if recipe.is_favorited %}active{% endif %}" 
+                data-recipe-id="{{ recipe.id }}">
+            {% if recipe.is_favorited %}★{% else %}☆{% endif %}
+        </button>
+        <button class="shopping-btn {% if recipe.is_in_shopping_cart %}active{% endif %}" 
+                data-recipe-id="{{ recipe.id }}">
+            {% if recipe.is_in_shopping_cart %}✓{% else %}＋{% endif %}
+        </button>
+    </div>
+    {% endif %}
+</div>

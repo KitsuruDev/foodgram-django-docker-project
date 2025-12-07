@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - Foodgram{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Регистрация нового пользователя</h2>
+    
+    <form method="post" action="{% url 'users:signup' %}">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="id_first_name">Имя</label>
+                <input type="text" name="first_name" id="id_first_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_last_name">Фамилия</label>
+                <input type="text" name="last_name" id="id_last_name" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_username">Имя пользователя</label>
+            <input type="text" name="username" id="id_username" required>
+            <small class="form-text">Только буквы, цифры и @/./+/-/_</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_email">Email</label>
+            <input type="email" name="email" id="id_email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password1">Пароль</label>
+            <input type="password" name="password1" id="id_password1" required>
+            <small class="form-text">
+                Пароль должен содержать минимум 8 символов.
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password2">Подтверждение пароля</label>
+            <input type="password" name="password2" id="id_password2" required>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn-primary">Зарегистрироваться</button>
+        </div>
+    </form>
+    
+    <p class="form-footer">
+        Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a>
+    </p>
+</div>
+{% endblock %}
