@@ -53,6 +53,16 @@
                 <div class="recipe-stats">
                     <span class="stat-item">⏱️ {{ recipe.cooking_time }} мин</span>
                 </div>
+
+                <div class="recipe-meta">
+                    <div class="recipe-tags">
+                        {% for tag in recipe.tags.all %}
+                        <span class="tag-badge tag-{{ tag.slug|default:tag.id }}">
+                            {{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -373,6 +383,25 @@
     margin: 20px 0;
     border-left: 4px solid #2196F3;
 }
+
+.recipe-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag-badge {
+    background: #4CAF50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.tag-breakfast { background: #FF9800; }
+.tag-lunch { background: #2196F3; }
+.tag-dinner { background: #9C27B0; }
 </style>
 
 <script>

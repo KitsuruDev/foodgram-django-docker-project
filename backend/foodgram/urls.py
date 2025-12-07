@@ -67,9 +67,9 @@ urlpatterns = [
     # Рецепты
     path('recipes/', include([
         path('', TemplateView.as_view(template_name='index.html'), name='recipes'),
-        path('create/', recipes_views.RecipeCreateView.as_view(), name='create_recipe'),
+        path('create/', recipes_views.RecipeCreateUpdateView.as_view(), name='create_recipe'),
         path('<int:pk>/', recipes_views.RecipeDetailView.as_view(), name='detail_recipe'),
-        path('<int:pk>/edit/', recipes_views.RecipeUpdateView.as_view(), name='edit_recipe'),
+        path('<int:pk>/edit/', recipes_views.RecipeCreateUpdateView.as_view(), name='edit_recipe'),
         path('<int:pk>/delete/', recipes_views.RecipeDeleteView.as_view(), name='delete_recipe'),
     ])),
     

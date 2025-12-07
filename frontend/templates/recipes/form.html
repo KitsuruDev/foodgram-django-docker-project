@@ -79,6 +79,11 @@
                                accept="image/*" {% if not form.instance.pk %}required{% endif %}>
                         <div class="upload-help">Выберите файл в формате JPG, PNG или GIF (макс. 5MB)</div>
                     </div>
+                    <!-- Превью нового изображения -->
+                    <div id="new-image-preview" class="new-image-preview" style="display: none;">
+                        <p>Предпросмотр нового изображения:</p>
+                        <img id="image-preview" src="#" alt="Preview" class="image-preview">
+                    </div>
                 </div>
             </div>
             
@@ -89,7 +94,7 @@
                     {% for tag in tags %}
                     <label class="tag-checkbox">
                         <input type="checkbox" name="tags" value="{{ tag.id }}" 
-                               {% if tag.id in selected_tags %}checked{% endif %}>
+                               {% if tag in form.instance.tags.all %}checked{% endif %}>
                         <span class="tag-label">{{ tag.name }}</span>
                     </label>
                     {% endfor %}
@@ -141,12 +146,19 @@
             <!-- Кнопки -->
             <div class="form-actions">
                 <button type="submit" class="btn-submit">
-                    <i class="fas fa-save"></i> {% if form.instance.pk %}Сохранить изменения{% else %}Создать рецепт{% endif %}
+                    <i class="fas fa-save"></i> 
+                    {% if is_edit %}Сохранить изменения{% else %}Создать рецепт{% endif %}
                 </button>
-                <a href="{% if form.instance.pk %}{% url 'detail_recipe' form.instance.pk %}{% else %}{% url 'index' %}{% endif %}" 
-                   class="btn-cancel">
+                
+                {% if is_edit and recipe %}
+                <a href="{% url 'detail_recipe' recipe.pk %}" class="btn-cancel">
                     <i class="fas fa-times"></i> Отмена
                 </a>
+                {% else %}
+                <a href="{% url 'index' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Отмена
+                </a>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -403,6 +415,14 @@
     margin-bottom: 15px;
 }
 
+.new-image-preview {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+}
+
 .image-preview {
     max-width: 200px;
     height: auto;
@@ -481,6 +501,25 @@
     color: #333;
 }
 
+/* Стили для уведомлений */
+.error-message {
+    background: #ffebee;
+    color: #d32f2f;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 4px solid #f44336;
+}
+
+.success-message {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 4px solid #4caf50;
+}
+
 /* Иконки FontAwesome */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 </style>
@@ -489,29 +528,83 @@
 // JavaScript для работы с ингредиентами
 let ingredientsList = [];
 
+// Ждем полной загрузки DOM
 document.addEventListener('DOMContentLoaded', function() {
-    // Обновляй единицы измерения при выборе ингредиента
-    document.getElementById('ingredient-select').addEventListener('change', function() {
+    console.log('DOM загружен, инициализация формы...');
+    
+    // Инициализация элементов
+    const ingredientSelect = document.getElementById('ingredient-select');
+    const amountInput = document.getElementById('ingredient-amount');
+    const measurementUnit = document.getElementById('measurement-unit');
+    
+    if (!ingredientSelect || !amountInput || !measurementUnit) {
+        console.error('Не найдены необходимые элементы формы!');
+        return;
+    }
+    
+    // Обновляем единицы измерения при выборе ингредиента
+    ingredientSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const unit = selectedOption.dataset.unit || 'ед.';
-        document.getElementById('measurement-unit').textContent = unit;
-        
-        // Авто-фокус на поле количества
-        document.getElementById('ingredient-amount').focus();
+        measurementUnit.textContent = unit;
+        amountInput.focus();
     });
     
-    // Автозаполнение при Enter в поле количества
-    document.getElementById('ingredient-amount').addEventListener('keypress', function(e) {
+    // Автозаполнение при Enter
+    amountInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addIngredient();
         }
     });
+    
+    // Предпросмотр изображения
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const preview = document.getElementById('image-preview');
+            const previewContainer = document.getElementById('new-image-preview');
+            
+            if (preview && previewContainer && this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+    
+    // Загружаем существующие ингредиенты при редактировании
+    {% if form.instance.pk and recipe_ingredients %}
+    console.log('Загрузка существующих ингредиентов...');
+    {% for ri in recipe_ingredients %}
+    ingredientsList.push({
+        id: '{{ ri.ingredient.id }}',
+        name: '{{ ri.ingredient.name|escapejs }}',
+        amount: parseFloat({{ ri.amount }}),
+        unit: '{{ ri.ingredient.measurement_unit|escapejs }}'
+    });
+    {% endfor %}
+    updateIngredientsData();
+    updateIngredientsList();
+    {% endif %}
 });
 
 function addIngredient() {
+    console.log('Добавление ингредиента...');
+    
     const select = document.getElementById('ingredient-select');
     const amountInput = document.getElementById('ingredient-amount');
+    
+    if (!select || !amountInput) {
+        showError('Не найдены элементы формы!');
+        return;
+    }
+    
     const ingredientId = select.value;
     
     if (!ingredientId) {
@@ -519,30 +612,39 @@ function addIngredient() {
         return;
     }
     
-    const ingredientName = select.options[select.selectedIndex].textContent;
+    const selectedOption = select.options[select.selectedIndex];
+    const ingredientName = selectedOption.textContent;
     const amount = parseFloat(amountInput.value);
-    const unit = select.options[select.selectedIndex].dataset.unit || 'ед.';
+    const unit = selectedOption.dataset.unit || 'ед.';
     
+    // Проверка количества
     if (!amount || amount <= 0 || isNaN(amount)) {
         showError('Пожалуйста, укажите корректное количество');
         amountInput.focus();
         return;
     }
     
+    // Округляем до 2 знаков после запятой
+    const roundedAmount = parseFloat(amount.toFixed(2));
+    
     // Проверяем, не добавлен ли уже этот ингредиент
     const existingIndex = ingredientsList.findIndex(item => item.id === ingredientId);
     
     if (existingIndex !== -1) {
-        // Обновляем существующий
-        ingredientsList[existingIndex].amount = parseFloat(ingredientsList[existingIndex].amount) + amount;
-        ingredientsList[existingIndex].amount = parseFloat(ingredientsList[existingIndex].amount.toFixed(2));
-        showSuccess('Количество ингредиента обновлено');
+        // Обновляем существующий - СНАЧАЛА спрашиваем
+        if (confirm(`Ингредиент "${ingredientName}" уже добавлен. Заменить количество с ${ingredientsList[existingIndex].amount} на ${roundedAmount}?`)) {
+            ingredientsList[existingIndex].amount = roundedAmount;
+            ingredientsList[existingIndex].unit = unit;
+            showSuccess('Количество ингредиента обновлено');
+        } else {
+            return; // Отмена - не обновляем
+        }
     } else {
         // Добавляем новый
         ingredientsList.push({
             id: ingredientId,
             name: ingredientName,
-            amount: parseFloat(amount.toFixed(2)),
+            amount: roundedAmount,
             unit: unit
         });
         showSuccess('Ингредиент добавлен');
@@ -559,96 +661,156 @@ function addIngredient() {
     select.focus();
 }
 
-function removeIngredient(index) {
-    ingredientsList.splice(index, 1);
+function removeIngredient(ingredientId) {
+    console.log('Удаление ингредиента:', ingredientId);
+    ingredientsList = ingredientsList.filter(item => item.id !== ingredientId);
     updateIngredientsData();
     updateIngredientsList();
     showSuccess('Ингредиент удален');
 }
 
 function updateIngredientsList() {
+    console.log('Обновление списка ингредиентов...');
+    
     const container = document.getElementById('selected-ingredients');
     const emptyMessage = document.getElementById('empty-ingredients-message');
     
+    if (!container) {
+        console.error('Не найден контейнер для ингредиентов!');
+        return;
+    }
+    
     if (ingredientsList.length === 0) {
-        emptyMessage.style.display = 'block';
+        if (emptyMessage) {
+            emptyMessage.style.display = 'block';
+        }
         container.innerHTML = '';
         return;
     }
     
-    emptyMessage.style.display = 'none';
+    if (emptyMessage) {
+        emptyMessage.style.display = 'none';
+    }
+    
+    // Очищаем и перерисовываем контейнер
     container.innerHTML = '';
     
-    ingredientsList.forEach((ingredient, index) => {
+    ingredientsList.forEach((ingredient) => {
         const div = document.createElement('div');
         div.className = 'ingredient-item';
+        div.setAttribute('data-id', ingredient.id);
         div.innerHTML = `
             <div>
                 <span class="ingredient-name">${ingredient.name}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <span class="ingredient-amount">${ingredient.amount} ${ingredient.unit}</span>
-                <button type="button" class="ingredient-remove" onclick="removeIngredient(${index})">
+                <button type="button" class="ingredient-remove" onclick="removeIngredient('${ingredient.id}')">
                     <i class="fas fa-trash"></i> Удалить
                 </button>
             </div>
         `;
         container.appendChild(div);
     });
+    
+    console.log('Список ингредиентов обновлен:', ingredientsList);
 }
 
 function updateIngredientsData() {
-    document.getElementById('ingredients-data').value = JSON.stringify(ingredientsList);
-    console.log('Ингредиенты сохранены:', ingredientsList);
+    const hiddenInput = document.getElementById('ingredients-data');
+    if (!hiddenInput) {
+        console.error('Не найдено скрытое поле для ингредиентов!');
+        return;
+    }
+    
+    // Формируем данные в правильном формате
+    const backendFormat = ingredientsList.map(ingredient => ({
+        id: ingredient.id,
+        amount: ingredient.amount
+        // Не нужно отправлять name и unit - они есть в базе
+    }));
+    
+    hiddenInput.value = JSON.stringify(backendFormat);
+    console.log('Ингредиенты сохранены для отправки:', backendFormat);
+    console.log('Строка JSON:', hiddenInput.value);
 }
 
+// Функции для показа уведомлений
+let notificationContainer = null;
+
 function showError(message) {
-    const errorDiv = document.getElementById('form-errors') || createErrorContainer();
-    errorDiv.innerHTML += `<div class="error-message">⚠️ ${message}</div>`;
+    console.error('Ошибка:', message);
+    const container = getNotificationContainer();
+    const errorMsg = document.createElement('div');
+    errorMsg.className = 'error-message';
+    errorMsg.innerHTML = `⚠️ ${message}`;
+    container.appendChild(errorMsg);
     
-    // Автоудаление через 5 секунд
     setTimeout(() => {
-        if (errorDiv.children.length > 0) {
-            errorDiv.removeChild(errorDiv.children[0]);
+        if (errorMsg.parentNode === container) {
+            container.removeChild(errorMsg);
         }
     }, 5000);
 }
 
 function showSuccess(message) {
-    const errorDiv = document.getElementById('form-errors') || createErrorContainer();
-    errorDiv.innerHTML += `<div class="success-message">✅ ${message}</div>`;
+    console.log('Успех:', message);
+    const container = getNotificationContainer();
+    const successMsg = document.createElement('div');
+    successMsg.className = 'success-message';
+    successMsg.innerHTML = `✅ ${message}`;
+    container.appendChild(successMsg);
     
     setTimeout(() => {
-        if (errorDiv.children.length > 0) {
-            errorDiv.removeChild(errorDiv.children[0]);
+        if (successMsg.parentNode === container) {
+            container.removeChild(successMsg);
         }
     }, 3000);
 }
 
-function createErrorContainer() {
-    const container = document.createElement('div');
-    container.id = 'form-errors';
-    container.style.position = 'fixed';
-    container.style.top = '20px';
-    container.style.right = '20px';
-    container.style.zIndex = '1000';
-    document.body.appendChild(container);
-    return container;
+function getNotificationContainer() {
+    if (!notificationContainer) {
+        notificationContainer = document.getElementById('form-errors');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'form-errors';
+            notificationContainer.style.position = 'fixed';
+            notificationContainer.style.top = '20px';
+            notificationContainer.style.right = '20px';
+            notificationContainer.style.zIndex = '10000';
+            notificationContainer.style.maxWidth = '300px';
+            document.body.appendChild(notificationContainer);
+        }
+    }
+    return notificationContainer;
 }
 
-{% if form.instance.pk and recipe_ingredients %}
-document.addEventListener('DOMContentLoaded', function() {
-    {% for ri in recipe_ingredients %}
-    ingredientsList.push({
-        id: '{{ ri.ingredient.id }}',
-        name: '{{ ri.ingredient.name|escapejs }}',
-        amount: {{ ri.amount }},
-        unit: '{{ ri.ingredient.measurement_unit|escapejs }}'
-    });
-    {% endfor %}
-    updateIngredientsData();
-    updateIngredientsList();
+document.getElementById('recipe-form').addEventListener('submit', function(e) {
+    // Проверяем, есть ли ингредиенты
+    if (ingredientsList.length === 0) {
+        e.preventDefault();
+        showError('Добавьте хотя бы один ингредиент!');
+        return;
+    }
+    
+    // Проверяем, что все ингредиенты имеют количество > 0
+    const invalidIngredients = ingredientsList.filter(item => 
+        !item.amount || item.amount <= 0 || isNaN(item.amount)
+    );
+    
+    if (invalidIngredients.length > 0) {
+        e.preventDefault();
+        showError('У некоторых ингредиентов некорректное количество');
+        return;
+    }
+    
+    // Отладочная информация
+    console.log('Форма отправляется. Ингредиенты:', ingredientsList);
+    console.log('Скрытое поле:', document.getElementById('ingredients-data').value);
 });
-{% endif %}
+
+// Экспортируем функции в глобальную область видимости
+window.addIngredient = addIngredient;
+window.removeIngredient = removeIngredient;
 </script>
 {% endblock %}

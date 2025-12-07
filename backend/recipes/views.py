@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import CreateView, UpdateView, DetailView, DeleteView
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import View, DetailView, DeleteView
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.db.models import Sum
@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
+import json
 from .models import (
     Recipe, Ingredient, Tag,
     Favorite, ShoppingCart, Subscription,
@@ -100,6 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return response
 
+
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -107,6 +109,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
     pagination_class = None
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
@@ -135,35 +138,118 @@ class RecipeDetailView(DetailView):
         return context
 
 
-class RecipeCreateView(CreateView):
-    model = Recipe
-    form_class = RecipeForm
+class RecipeCreateUpdateView(LoginRequiredMixin, View):
     template_name = 'recipes/form.html'
-    success_url = reverse_lazy('index')
     
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+    def get(self, request, pk=None):
+        # Если есть pk - редактирование, если нет - создание
+        if pk:
+            recipe = get_object_or_404(Recipe, pk=pk, author=request.user)
+            form = RecipeForm(instance=recipe)
+            is_edit = True
+        else:
+            recipe = None
+            form = RecipeForm()
+            is_edit = False
+        
+        # Получаем все ингредиенты для выпадающего списка
+        ingredients = Ingredient.objects.all().order_by('name')
+        tags = Tag.objects.all()
+        
+        # Получаем ингредиенты рецепта для редактирования
+        recipe_ingredients = []
+        if recipe:
+            recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related('ingredient')
+        
+        context = {
+            'form': form,
+            'ingredients': ingredients,
+            'tags': tags,
+            'recipe_ingredients': recipe_ingredients,
+            'is_edit': is_edit,
+            'recipe': recipe,  # Добавляем сам рецепт в контекст
+        }
+        
+        return render(request, self.template_name, context)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['tags'] = Tag.objects.all()
-        context['ingredients'] = Ingredient.objects.all()
-        return context
-
-
-class RecipeUpdateView(UpdateView):
-    model = Recipe
-    form_class = RecipeForm
-    template_name = 'recipes/form.html'
-    success_url = reverse_lazy('index')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['tags'] = Tag.objects.all()
-        context['ingredients'] = Ingredient.objects.all()
-        context['recipe_ingredients'] = self.object.recipe_ingredients.select_related('ingredient').all()
-        return context
+    def post(self, request, pk=None):
+        # Определяем, редактируем или создаем
+        if pk:
+            recipe = get_object_or_404(Recipe, pk=pk, author=request.user)
+            form = RecipeForm(request.POST, request.FILES, instance=recipe)
+            is_edit = True
+        else:
+            recipe = None
+            form = RecipeForm(request.POST, request.FILES)
+            is_edit = False
+        
+        if form.is_valid():
+            # Сохраняем рецепт без коммита
+            recipe = form.save(commit=False)
+            
+            # При создании устанавливаем автора
+            if not is_edit:
+                recipe.author = request.user
+            
+            recipe.save()
+            
+            # Сохраняем теги
+            tags_ids = request.POST.getlist('tags')
+            recipe.tags.set(Tag.objects.filter(id__in=tags_ids))
+            
+            # Обрабатываем ингредиенты из JSON
+            ingredients_data = request.POST.get('ingredients_data')
+            
+            if ingredients_data:
+                try:
+                    ingredients_list = json.loads(ingredients_data)
+                    
+                    # Удаляем старые связи (при редактировании)
+                    RecipeIngredient.objects.filter(recipe=recipe).delete()
+                    
+                    # Создаем новые связи
+                    for item in ingredients_list:
+                        try:
+                            ingredient_id = item.get('id')
+                            amount = item.get('amount')
+                            
+                            if ingredient_id and amount:
+                                ingredient = Ingredient.objects.get(id=ingredient_id)
+                                RecipeIngredient.objects.create(
+                                    recipe=recipe,
+                                    ingredient=ingredient,
+                                    amount=amount
+                                )
+                        except Ingredient.DoesNotExist:
+                            continue
+                        except Exception as e:
+                            print(f"Ошибка при создании связи: {e}")
+                            continue
+                            
+                except json.JSONDecodeError:
+                    pass
+                except Exception as e:
+                    print(f"Общая ошибка при обработке ингредиентов: {e}")
+            
+            # Сохраняем ManyToMany поля
+            form.save_m2m()
+            
+            # Перенаправляем на страницу рецепта
+            return redirect('detail_recipe', pk=recipe.pk)
+        
+        # Если форма не валидна
+        ingredients = Ingredient.objects.all().order_by('name')
+        tags = Tag.objects.all()
+        
+        context = {
+            'form': form,
+            'ingredients': ingredients,
+            'tags': tags,
+            'is_edit': is_edit,
+            'recipe': recipe,
+        }
+        
+        return render(request, self.template_name, context)
 
 
 class RecipeDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

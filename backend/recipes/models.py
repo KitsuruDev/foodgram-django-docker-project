@@ -78,6 +78,9 @@ class RecipeIngredient(models.Model):
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
 
+    def __str__(self):
+        return f'{self.ingredient.name} - {self.amount}'
+
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
