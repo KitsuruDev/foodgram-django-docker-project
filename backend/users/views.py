@@ -4,12 +4,31 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from django.contrib.auth.models import User
 from djoser.views import UserViewSet as DjoserUserViewSet
 from recipes.models import Subscription, Recipe
 from recipes.serializers import RecipeSerializer
 from .serializers import UserSerializer
 
 User = get_user_model()
+
+class SignUpView(CreateView):
+    template_name = 'users/signup.html'
+    form_class = UserCreationForm
+    success_url = reverse_lazy('index')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+        return response
 
 class UserViewSet(DjoserUserViewSet):
     queryset = User.objects.all()

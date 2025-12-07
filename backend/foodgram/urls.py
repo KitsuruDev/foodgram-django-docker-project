@@ -23,6 +23,8 @@ from django.views.generic import TemplateView
 
 # Импортируем созданные views
 from . import views
+from users.forms import CustomUserCreationForm
+from django.views.generic import CreateView
 
 urlpatterns = [
     # Админка
@@ -33,8 +35,8 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     
-    # Главная страница через view
-    path('', views.HomeView.as_view(template_name='index.html'), name='index'),
+    # Главная страница
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
     
     # Аутентификация
     path('auth/login/', auth_views.LoginView.as_view(
@@ -44,6 +46,12 @@ urlpatterns = [
     
     path('auth/logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     
+    path('auth/signup/', CreateView.as_view(
+        template_name='users/signup.html',
+        form_class=CustomUserCreationForm,
+        success_url='/auth/login/'
+    ), name='signup'),
+    
     path('auth/password_change/', auth_views.PasswordChangeView.as_view(
         template_name='users/password_change.html',
         success_url='/auth/password_change/done/'
@@ -52,9 +60,6 @@ urlpatterns = [
     path('auth/password_change/done/', auth_views.PasswordChangeDoneView.as_view(
         template_name='users/password_change_done.html'
     ), name='password_change_done'),
-    
-    # Регистрация (будет через API, но для фронта оставляем шаблон)
-    path('auth/signup/', TemplateView.as_view(template_name='users/signup.html'), name='signup'),
     
     # Профиль пользователя
     path('users/', include('users.urls')),
@@ -67,16 +72,12 @@ urlpatterns = [
         path('<int:pk>/edit/', TemplateView.as_view(template_name='recipes/form.html'), name='edit_recipe'),
     ])),
     
-    # Избранное
+    # Избранное, подписки, список покупок
     path('favorites/', TemplateView.as_view(template_name='recipes/favorites.html'), name='favorites'),
-    
-    # Подписки
     path('subscriptions/', TemplateView.as_view(template_name='users/subscriptions.html'), name='subscriptions'),
-    
-    # Список покупок
     path('shopping-list/', TemplateView.as_view(template_name='shopping_list/shopping_list.html'), name='shopping_list'),
     
-    # Статические страницы через views
+    # Статические страницы
     path('about/', views.AboutView.as_view(), name='about'),
     path('tech/', views.TechView.as_view(), name='tech'),
 ]

@@ -4,55 +4,143 @@
 {% block title %}Регистрация - Foodgram{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2>Регистрация нового пользователя</h2>
+<div class="container">
+    <h2 class="text-center">Регистрация</h2>
     
-    <form method="post" action="{% url 'users:signup' %}">
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        Пожалуйста, исправьте ошибки ниже.
+    </div>
+    {% endif %}
+    
+    <form method="post">
         {% csrf_token %}
         
-        <div class="form-row">
-            <div class="form-group">
-                <label for="id_first_name">Имя</label>
-                <input type="text" name="first_name" id="id_first_name" required>
+        <div class="form-group">
+            <label for="id_username">Имя пользователя:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_email">Email:</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="row">
+            <div class="form-group col">
+                <label for="id_first_name">Имя:</label>
+                {{ form.first_name }}
             </div>
-            
-            <div class="form-group">
-                <label for="id_last_name">Фамилия</label>
-                <input type="text" name="last_name" id="id_last_name" required>
+            <div class="form-group col">
+                <label for="id_last_name">Фамилия:</label>
+                {{ form.last_name }}
             </div>
         </div>
         
         <div class="form-group">
-            <label for="id_username">Имя пользователя</label>
-            <input type="text" name="username" id="id_username" required>
-            <small class="form-text">Только буквы, цифры и @/./+/-/_</small>
+            <label for="id_password1">Пароль:</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <div class="error">{{ form.password1.errors }}</div>
+            {% endif %}
         </div>
         
         <div class="form-group">
-            <label for="id_email">Email</label>
-            <input type="email" name="email" id="id_email" required>
+            <label for="id_password2">Подтверждение пароля:</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div class="error">{{ form.password2.errors }}</div>
+            {% endif %}
         </div>
         
-        <div class="form-group">
-            <label for="id_password1">Пароль</label>
-            <input type="password" name="password1" id="id_password1" required>
-            <small class="form-text">
-                Пароль должен содержать минимум 8 символов.
-            </small>
-        </div>
-        
-        <div class="form-group">
-            <label for="id_password2">Подтверждение пароля</label>
-            <input type="password" name="password2" id="id_password2" required>
-        </div>
-        
-        <div class="form-group">
-            <button type="submit" class="btn-primary">Зарегистрироваться</button>
-        </div>
+        <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
     </form>
     
-    <p class="form-footer">
-        Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a>
-    </p>
+    <div class="text-center mt-4">
+        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+    </div>
 </div>
+
+<style>
+.container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input, 
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.row {
+    display: flex;
+    gap: 1rem;
+}
+
+.col {
+    flex: 1;
+}
+</style>
 {% endblock %}

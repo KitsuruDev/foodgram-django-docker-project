@@ -58,7 +58,7 @@
                 <h3>Присоединяйтесь к нам!</h3>
                 <p>Станьте частью нашего растущего сообщества любителей кулинарии</p>
                 {% if not user.is_authenticated %}
-                <a href="{% url 'users:signup' %}" class="btn-primary">Зарегистрироваться</a>
+                <a href="{% url 'signup' %}" class="btn-primary">Зарегистрироваться</a>
                 {% endif %}
             </div>
         </div>

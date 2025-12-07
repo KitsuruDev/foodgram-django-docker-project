@@ -4,12 +4,12 @@
 {% block title %}Вход - Foodgram{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2>Вход в аккаунт</h2>
+<div class="container">
+    <h2 class="text-center">Вход в систему</h2>
     
     {% if form.errors %}
-    <div class="alert alert-error">
-        Неправильное имя пользователя или пароль.
+    <div class="alert alert-danger">
+        Неверное имя пользователя или пароль.
     </div>
     {% endif %}
     
@@ -17,23 +17,106 @@
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="id_username">Имя пользователя</label>
-            <input type="text" name="username" id="id_username" required autofocus>
+            <label for="id_username">Логин (почта):</label>
+            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
         </div>
         
         <div class="form-group">
-            <label for="id_password">Пароль</label>
-            <input type="password" name="password" id="id_password" required>
+            <label for="id_password">Пароль:</label>
+            <input type="password" name="password" id="id_password" class="form-control" required>
         </div>
         
-        <div class="form-group">
-            <button type="submit" class="btn-primary">Войти</button>
-            <input type="hidden" name="next" value="{{ next }}">
-        </div>
+        <button type="submit" class="btn btn-primary w-100">Войти</button>
+        <input type="hidden" name="next" value="{{ next }}">
     </form>
     
-    <p class="form-footer">
-        Нет аккаунта? <a href="{% url 'users:signup' %}">Зарегистрируйтесь</a>
-    </p>
+    <div class="text-center mt-4">
+        <p>Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрируйтесь</a></p>
+        <a href="/" class="btn btn-link">На главную</a>
+    </div>
 </div>
+
+<style>
+.container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.btn-link {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
 {% endblock %}
