@@ -1,6 +1,10 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import CreateView, UpdateView, DetailView, DeleteView
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 from django.db.models import Sum
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,8 +19,10 @@ from .serializers import (
     RecipeSerializer, RecipeCreateUpdateSerializer,
     IngredientSerializer, TagSerializer
 )
+from .forms import RecipeForm
 from .permissions import IsAuthorOrReadOnly
 from .filters import RecipeFilter, IngredientFilter
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
@@ -107,3 +113,68 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
     pagination_class = None
+
+
+class RecipeDetailView(DetailView):
+    model = Recipe
+    template_name = 'recipes/detail.html'
+    context_object_name = 'recipe'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        recipe = self.get_object()
+        
+        # Добавляем дополнительные данные
+        context['is_subscribed'] = False
+        if self.request.user.is_authenticated:
+            # Проверяем подписку
+            context['is_subscribed'] = self.request.user.subscriptions.filter(
+                author=recipe.author
+            ).exists()
+        
+        return context
+
+
+class RecipeCreateView(CreateView):
+    model = Recipe
+    form_class = RecipeForm
+    template_name = 'recipes/form.html'
+    success_url = reverse_lazy('index')
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tags'] = Tag.objects.all()
+        context['ingredients'] = Ingredient.objects.all()
+        return context
+
+
+class RecipeUpdateView(UpdateView):
+    model = Recipe
+    form_class = RecipeForm
+    template_name = 'recipes/form.html'
+    success_url = reverse_lazy('index')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tags'] = Tag.objects.all()
+        context['ingredients'] = Ingredient.objects.all()
+        context['recipe_ingredients'] = self.object.recipe_ingredients.select_related('ingredient').all()
+        return context
+
+
+class RecipeDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Recipe
+    template_name = 'recipes/delete_confirm.html'
+    success_url = reverse_lazy('index')
+    
+    def test_func(self):
+        recipe = self.get_object()
+        return self.request.user == recipe.author
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Рецепт успешно удален')
+        return super().delete(request, *args, **kwargs)

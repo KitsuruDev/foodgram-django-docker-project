@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.http import Http404
+from recipes.models import Recipe
 
 
 def custom_404(request, exception=None):
@@ -13,15 +14,14 @@ def custom_500(request):
     return render(request, 'errors/500.html', status=500)
 
 
-class HomeView(TemplateView):
-    """Главная страница с рецептами."""
+class HomeView(ListView):
+    model = Recipe
     template_name = 'index.html'
+    context_object_name = 'recipes'
+    paginate_by = 6
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Здесь можно добавить данные для главной страницы
-        # Например, список рецептов
-        return context
+    def get_queryset(self):
+        return Recipe.objects.all().order_by('-created_at')
 
 
 class AboutView(TemplateView):

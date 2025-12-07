@@ -19,12 +19,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, CreateView
 
-# Импортируем созданные views
 from . import views
+import recipes.views as recipes_views
 from users.forms import CustomUserCreationForm
-from django.views.generic import CreateView
+
 
 urlpatterns = [
     # Админка
@@ -36,7 +36,7 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.authtoken')),
     
     # Главная страница
-    path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('', views.HomeView.as_view(), name='index'),
     
     # Аутентификация
     path('auth/login/', auth_views.LoginView.as_view(
@@ -67,9 +67,10 @@ urlpatterns = [
     # Рецепты
     path('recipes/', include([
         path('', TemplateView.as_view(template_name='index.html'), name='recipes'),
-        path('create/', TemplateView.as_view(template_name='recipes/form.html'), name='create_recipe'),
-        path('<int:pk>/', TemplateView.as_view(template_name='recipes/detail.html'), name='recipe_detail'),
-        path('<int:pk>/edit/', TemplateView.as_view(template_name='recipes/form.html'), name='edit_recipe'),
+        path('create/', recipes_views.RecipeCreateView.as_view(), name='create_recipe'),
+        path('<int:pk>/', recipes_views.RecipeDetailView.as_view(), name='detail_recipe'),
+        path('<int:pk>/edit/', recipes_views.RecipeUpdateView.as_view(), name='edit_recipe'),
+        path('<int:pk>/delete/', recipes_views.RecipeDeleteView.as_view(), name='delete_recipe'),
     ])),
     
     # Избранное, подписки, список покупок

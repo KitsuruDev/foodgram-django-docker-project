@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ recipe.title }} - Foodgram{% endblock %}
+{% block title %}{{ recipe.name }} - Foodgram{% endblock %}
 
 {% block content %}
 <div class="container recipe-detail">
     <div class="recipe-header">
         <div class="recipe-image">
             {% if recipe.image %}
-                <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+                <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
             {% else %}
                 <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image">
             {% endif %}
@@ -23,19 +23,21 @@
                 </button>
                 
                 {% if user == recipe.author %}
-                <a href="{% url 'recipes:edit' recipe.id %}" class="btn-edit">Редактировать</a>
-                <button class="btn-delete" onclick="confirmDelete()">Удалить</button>
+                <a href="{% url 'edit_recipe' recipe.id %}" class="btn-edit">Редактировать</a>
+                <a href="{% url 'delete_recipe' recipe.id %}" class="btn-delete" onclick="return confirm('Вы уверены?')">
+                    <i class="fas fa-trash"></i> Удалить
+                </a>
                 {% endif %}
             </div>
             {% endif %}
         </div>
         
         <div class="recipe-info">
-            <h1>{{ recipe.title }}</h1>
+            <h1>{{ recipe.name }}</h1>
             
             <div class="recipe-meta">
                 <div class="author-info">
-                    <a href="{% url 'users:profile' recipe.author.username %}" class="author-link">
+                    <a href="/users/{{ recipe.author.username }}/" class="author-link">
                         {% if recipe.author.profile.avatar %}
                             <img src="{{ recipe.author.profile.avatar.url }}" alt="Аватар" class="author-avatar">
                         {% endif %}
@@ -50,8 +52,6 @@
                 
                 <div class="recipe-stats">
                     <span class="stat-item">⏱️ {{ recipe.cooking_time }} мин</span>
-                    <span class="stat-item">👁️ {{ recipe.views }} просмотров</span>
-                    <span class="stat-item">❤️ {{ recipe.favorites_count }} в избранном</span>
                 </div>
             </div>
         </div>
@@ -73,7 +73,11 @@
         <div class="instructions-section">
             <h2>Описание</h2>
             <div class="recipe-description">
-                {{ recipe.description|linebreaks }}
+                {% if recipe.text %}
+                    {{ recipe.text|linebreaks }}
+                {% else %}
+                    <p>Описание рецепта отсутствует.</p>
+                {% endif %}
             </div>
             
             {% if recipe.tags.all %}
@@ -94,6 +98,283 @@
     </div>
 </div>
 
+<style>
+.container.recipe-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.recipe-header {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.recipe-image {
+    flex: 1;
+    min-width: 300px;
+}
+
+.recipe-image img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.recipe-actions-top {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.recipe-actions-top button,
+.recipe-actions-top .btn-edit,
+.recipe-actions-top .btn-delete {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.favorite-btn {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: white;
+}
+
+.shopping-btn {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+}
+
+.btn-edit {
+    background: #2196F3;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px !important;
+    display: inline-block;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.recipe-info {
+    flex: 2;
+    min-width: 300px;
+}
+
+.recipe-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.recipe-meta {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+}
+
+.author-link:hover {
+    color: #4CAF50;
+}
+
+.subscribe-btn {
+    padding: 8px 16px;
+    background: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.recipe-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.recipe-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+    .recipe-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ingredients-section {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.ingredients-section h2 {
+    margin-bottom: 20px;
+    color: #4CAF50;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 10px;
+}
+
+.ingredients-list {
+    list-style: none;
+    padding: 0;
+}
+
+.ingredients-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.ingredients-list li:last-child {
+    border-bottom: none;
+}
+
+.ingredient-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.ingredient-amount {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.instructions-section {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.instructions-section h2 {
+    margin-bottom: 20px;
+    color: #2196F3;
+    border-bottom: 2px solid #2196F3;
+    padding-bottom: 10px;
+}
+
+.recipe-description {
+    line-height: 1.8;
+    color: #444;
+    font-size: 1.05rem;
+}
+
+.recipe-description p {
+    margin-bottom: 15px;
+}
+
+.recipe-tags {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tag-mini {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.tag-mini.tag-breakfast { background: #FF9800; color: white; }
+.tag-mini.tag-lunch { background: #4CAF50; color: white; }
+.tag-mini.tag-dinner { background: #2196F3; color: white; }
+
+.recipe-share {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.btn-share {
+    padding: 12px 30px;
+    background: #9C27B0;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.btn-share:hover {
+    transform: scale(1.05);
+    background: #7B1FA2;
+}
+
+/* Для неавторизованных */
+.recipe-actions-top:empty {
+    display: none;
+}
+
+.alert {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid #2196F3;
+}
+</style>
+
 <script>
 function copyRecipeLink() {
     const url = window.location.href;
@@ -104,21 +385,6 @@ function copyRecipeLink() {
             message.style.display = 'none';
         }, 2000);
     });
-}
-
-function confirmDelete() {
-    if (confirm('Вы уверены, что хотите удалить этот рецепт?')) {
-        fetch('{% url "recipes:delete" recipe.id %}', {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        }).then(response => {
-            if (response.ok) {
-                window.location.href = '{% url "index" %}';
-            }
-        });
-    }
 }
 </script>
 {% endblock %}

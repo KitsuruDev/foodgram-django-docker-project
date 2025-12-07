@@ -35,7 +35,7 @@
             <div class="author-recipes">
                 {% for recipe in author.recipes.all|slice:":3" %}
                 <div class="author-recipe">
-                    <a href="{% url 'recipes:detail' recipe.id %}">
+                    <a href="{% url 'detail_recipe' recipe.id %}">
                         {% if recipe.image %}
                             <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
                         {% endif %}

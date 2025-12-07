@@ -185,7 +185,7 @@ class RecipeAPITest(APITestCase):
             # Непагинированный ответ
             self.assertEqual(len(response.data), 2)
     
-    def test_get_recipe_detail(self):
+    def test_get_detail_recipe(self):
         """Тест получения деталей рецепта"""
         url = self.get_recipe_url(self.recipe.id)
         response = self.client.get(url)

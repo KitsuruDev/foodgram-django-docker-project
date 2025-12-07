@@ -26,7 +26,7 @@
             <div class="selected-recipes">
                 {% for recipe in recipes %}
                 <div class="selected-recipe">
-                    <a href="{% url 'recipes:detail' recipe.id %}" class="recipe-link">
+                    <a href="{% url 'detail_recipe' recipe.id %}" class="recipe-link">
                         {% if recipe.image %}
                             <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
                         {% endif %}
