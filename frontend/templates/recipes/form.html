@@ -4,384 +4,181 @@
 {% block title %}{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} рецепта - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="recipe-form-container">
-        <h2 class="form-title">{% if form.instance.pk %}✏️ Редактирование рецепта{% else %}➕ Создание нового рецепта{% endif %}</h2>
+<div class="recipe-form-container">
+    <h2 class="form-title">
+        <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus{% endif %}"></i>
+        {% if form.instance.pk %}Редактирование рецепта{% else %}Создание нового рецепта{% endif %}
+    </h2>
+    
+    <form method="post" enctype="multipart/form-data" id="recipe-form" class="styled-form"
+      {% if form.instance.pk %}action="{% url 'edit_recipe' form.instance.pk %}"{% else %}action="{% url 'create_recipe' %}"{% endif %}
+      data-redirect="{% if form.instance.pk %}{% url 'detail_recipe' form.instance.pk %}{% else %}{% url 'index' %}{% endif %}">
+        {% csrf_token %}
         
-        <form method="post" enctype="multipart/form-data" id="recipe-form" class="styled-form">
-            {% csrf_token %}
-            
-            {% if form.errors %}
-            <div class="alert alert-error">
-                <h4>⚠️ Пожалуйста, исправьте ошибки ниже:</h4>
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li><strong>{{ field|title }}:</strong> {{ error }}</li>
-                        {% endfor %}
+        {% if form.errors %}
+        <div class="alert alert-error">
+            <h4><i class="fas fa-exclamation-triangle"></i> Пожалуйста, исправьте ошибки:</h4>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li><strong>{{ field|title }}:</strong> {{ error }}</li>
                     {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <!-- Основная информация -->
+        <div class="form-section">
+            <h3><i class="fas fa-info-circle"></i> Основная информация</h3>
             
-            <!-- Основные поля -->
-            <div class="form-section">
-                <h3><i class="fas fa-info-circle"></i> Основная информация</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_name" class="form-label">
+                        <i class="fas fa-heading"></i> Название рецепта *
+                    </label>
+                    {{ form.name }}
+                    <div class="form-help">Придумайте интересное название для вашего рецепта</div>
+                </div>
                 
+                <div class="form-group">
+                    <label for="id_cooking_time" class="form-label">
+                        <i class="fas fa-clock"></i> Время приготовления (минуты) *
+                    </label>
+                    {{ form.cooking_time }}
+                    <div class="form-help">Минимальное время: 1 минута</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_text" class="form-label">
+                    <i class="fas fa-align-left"></i> Описание рецепта *
+                </label>
+                {{ form.text }}
+                <div class="form-help">Опишите процесс приготовления подробно, можно добавлять советы и рекомендации</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_image" class="form-label">
+                    <i class="fas fa-image"></i> Изображение рецепта {% if not form.instance.pk %}*{% endif %}
+                </label>
+                
+                {% if form.instance.image %}
+                <div class="current-image-preview">
+                    <p>Текущее изображение:</p>
+                    <img src="{{ form.instance.image.url }}" alt="Current image" class="image-preview" loading="lazy">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="image-clear" id="image-clear_id">
+                        Удалить текущее изображение
+                    </label>
+                </div>
+                {% endif %}
+                
+                <div class="file-upload">
+                    {{ form.image }}
+                    <div class="upload-help">Поддерживаемые форматы: JPG, PNG, GIF (максимальный размер: 5MB)</div>
+                </div>
+                
+                <!-- Контейнер для предпросмотра нового изображения -->
+                <div id="new-image-preview" class="new-image-preview" style="display: none;">
+                    <p>Предпросмотр нового изображения:</p>
+                    <img id="image-preview" src="#" alt="Preview" class="image-preview">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Теги -->
+        <div class="form-section">
+            <h3><i class="fas fa-tags"></i> Теги</h3>
+            <div class="tags-container">
+                {% for tag in tags %}
+                <label class="tag-checkbox">
+                    <input type="checkbox" name="tags" value="{{ tag.id }}" 
+                           {% if tag in form.instance.tags.all %}checked{% endif %}>
+                    <span class="tag-label">{{ tag.name }}</span>
+                </label>
+                {% empty %}
+                <p class="empty-message">Теги не загружены</p>
+                {% endfor %}
+            </div>
+            <div class="form-help">Выберите один или несколько тегов для вашего рецепта</div>
+        </div>
+        
+        <!-- Ингредиенты -->
+        <div class="form-section">
+            <h3><i class="fas fa-carrot"></i> Ингредиенты</h3>
+            
+            <div id="selected-ingredients" class="selected-ingredients">
+                <p class="empty-message" id="empty-ingredients-message">Ингредиенты не добавлены</p>
+            </div>
+            
+            <div class="add-ingredient-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="id_name" class="form-label">
-                            <i class="fas fa-heading"></i> Название рецепта *
-                        </label>
-                        <input type="text" name="name" id="id_name" class="form-control" 
-                               value="{{ form.name.value|default:'' }}" required
-                               placeholder="Например: Куриный суп с лапшой">
-                        <div class="form-help">Придумайте интересное название для вашего рецепта</div>
+                        <label for="ingredient-select">Выберите ингредиент</label>
+                        <select id="ingredient-select" class="form-control">
+                            <option value="">Загрузка ингредиентов...</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="id_cooking_time" class="form-label">
-                            <i class="fas fa-clock"></i> Время приготовления (минуты) *
-                        </label>
-                        <input type="number" name="cooking_time" id="id_cooking_time" 
-                               class="form-control" min="1" required
-                               value="{{ form.cooking_time.value|default:60 }}"
-                               placeholder="60">
-                        <div class="form-help">Пример: 45</div>
+                        <label for="ingredient-amount">Количество</label>
+                        <div class="amount-input">
+                            <input type="number" id="ingredient-amount" placeholder="0" min="0.1" step="0.1" value="1">
+                            <span id="measurement-unit">ед.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="id_text" class="form-label">
-                        <i class="fas fa-align-left"></i> Описание рецепта *
-                    </label>
-                    <textarea name="text" id="id_text" class="form-control" rows="4" required
-                              placeholder="Опишите процесс приготовления...">{{ form.text.value|default:'' }}</textarea>
-                    <div class="form-help">Опишите процесс приготовления, советы, историю блюда...</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="id_image" class="form-label">
-                        <i class="fas fa-image"></i> Изображение рецепта *
-                    </label>
-                    {% if form.instance.image %}
-                    <div class="current-image-preview">
-                        <p>Текущее изображение:</p>
-                        <img src="{{ form.instance.image.url }}" alt="Current image" class="image-preview">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="image-clear" id="image-clear_id">
-                            Удалить текущее изображение
-                        </label>
-                    </div>
-                    {% endif %}
-                    <div class="file-upload">
-                        <input type="file" name="image" id="id_image" class="form-control" 
-                               accept="image/*" {% if not form.instance.pk %}required{% endif %}>
-                        <div class="upload-help">Выберите файл в формате JPG, PNG или GIF (макс. 5MB)</div>
-                    </div>
-                    <!-- Превью нового изображения -->
-                    <div id="new-image-preview" class="new-image-preview" style="display: none;">
-                        <p>Предпросмотр нового изображения:</p>
-                        <img id="image-preview" src="#" alt="Preview" class="image-preview">
+                    
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-add-ingredient">
+                            <i class="fas fa-plus"></i> Добавить
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Теги -->
-            <div class="form-section">
-                <h3><i class="fas fa-tags"></i> Теги</h3>
-                <div class="tags-container">
-                    {% for tag in tags %}
-                    <label class="tag-checkbox">
-                        <input type="checkbox" name="tags" value="{{ tag.id }}" 
-                               {% if tag in form.instance.tags.all %}checked{% endif %}>
-                        <span class="tag-label">{{ tag.name }}</span>
-                    </label>
-                    {% endfor %}
-                </div>
-                <div class="form-help">Вы можете выбрать несколько тегов</div>
-            </div>
+            <!-- Скрытое поле для хранения данных об ингредиентах -->
+            <input type="hidden" name="ingredients_data" id="ingredients-data" value="">
             
-            <!-- Ингредиенты -->
-            <div class="form-section">
-                <h3><i class="fas fa-carrot"></i> Ингредиенты</h3>
-                <div id="selected-ingredients" class="selected-ingredients-list">
-                    <p class="empty-message" id="empty-ingredients-message">Ингредиенты не добавлены</p>
-                </div>
-                
-                <div class="add-ingredient-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ingredient-select">Ингредиент</label>
-                            <select id="ingredient-select" class="form-control">
-                                <option value="">Выберите ингредиент...</option>
-                                {% for ingredient in ingredients %}
-                                <option value="{{ ingredient.id }}" data-unit="{{ ingredient.measurement_unit }}">
-                                    {{ ingredient.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="ingredient-amount">Количество</label>
-                            <div class="amount-input">
-                                <input type="number" id="ingredient-amount" placeholder="0" min="0.1" step="0.1" value="1">
-                                <span id="measurement-unit">ед.</span>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button type="button" class="btn-add-ingredient" onclick="addIngredient()">
-                                <i class="fas fa-plus"></i> Добавить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Скрытое поле для хранения данных об ингредиентах -->
-                <input type="hidden" name="ingredients_data" id="ingredients-data" value="">
-            </div>
+            <!-- Поле для восстановления ингредиентов при редактировании -->
+            <input type="hidden" id="initial-ingredients" 
+                   value='[
+                   {% if recipe_ingredients %}
+                   {% for ri in recipe_ingredients %}
+                   {"id": "{{ ri.ingredient.id }}", "name": "{{ ri.ingredient.name }}", "amount": {{ ri.amount }}, "unit": "{{ ri.ingredient.measurement_unit }}"}{% if not forloop.last %},{% endif %}
+                   {% endfor %}
+                   {% endif %}
+                   ]'>
+        </div>
+        
+        <!-- Кнопки отправки -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="fas fa-save"></i> 
+                {% if form.instance.pk %}Сохранить изменения{% else %}Создать рецепт{% endif %}
+            </button>
             
-            <!-- Кнопки -->
-            <div class="form-actions">
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-save"></i> 
-                    {% if is_edit %}Сохранить изменения{% else %}Создать рецепт{% endif %}
-                </button>
-                
-                {% if is_edit and recipe %}
-                <a href="{% url 'detail_recipe' recipe.pk %}" class="btn-cancel">
-                    <i class="fas fa-times"></i> Отмена
-                </a>
-                {% else %}
-                <a href="{% url 'index' %}" class="btn-cancel">
-                    <i class="fas fa-times"></i> Отмена
-                </a>
-                {% endif %}
-            </div>
-        </form>
-    </div>
+            {% if form.instance.pk and recipe %}
+            <a href="{% url 'detail_recipe' recipe.pk %}" class="btn btn-cancel">
+                <i class="fas fa-times"></i> Отмена
+            </a>
+            {% else %}
+            <a href="{% url 'index' %}" class="btn btn-cancel">
+                <i class="fas fa-times"></i> Отмена
+            </a>
+            {% endif %}
+        </div>
+    </form>
 </div>
 
 <style>
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.recipe-form-container {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-}
-
-.form-title {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #4CAF50;
-}
-
-.styled-form .form-section {
-    margin-bottom: 40px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid #eee;
-}
-
-.styled-form .form-section:last-child {
-    border-bottom: none;
-}
-
-.styled-form h3 {
-    color: #4CAF50;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.styled-form .form-row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-@media (max-width: 768px) {
-    .styled-form .form-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-
-.styled-form .form-group {
-    flex: 1;
-}
-
-.styled-form .form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.styled-form .form-control {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-    box-sizing: border-box;
-}
-
-.styled-form .form-control:focus {
-    border-color: #4CAF50;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-}
-
-.styled-form textarea.form-control {
-    min-height: 120px;
-    resize: vertical;
-    font-family: inherit;
-}
-
-.styled-form .form-help {
-    font-size: 0.85rem;
-    color: #777;
-    margin-top: 5px;
-    font-style: italic;
-}
-
-/* Алерт ошибок */
-.alert-error {
-    background: #ffebee;
-    border-left: 4px solid #f44336;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 25px;
-}
-
-.alert-error h4 {
-    color: #d32f2f;
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-.alert-error ul {
-    margin: 0;
-    padding-left: 20px;
-}
-
-.alert-error li {
-    margin-bottom: 5px;
-}
-
-/* Теги */
-.tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.tag-checkbox {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 15px;
-    background: #f0f0f0;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s;
-    user-select: none;
-}
-
-.tag-checkbox:hover {
-    background: #e0e0e0;
-}
-
-.tag-checkbox input[type="checkbox"] {
-    margin-right: 8px;
-}
-
-.tag-checkbox .tag-label {
-    font-weight: 500;
-}
-
-.tag-checkbox input[type="checkbox"]:checked + .tag-label {
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-.tag-checkbox input[type="checkbox"]:checked ~ .tag-checkbox {
-    background: #4CAF50;
-    color: white;
-}
-
-/* Ингредиенты */
-.selected-ingredients-list {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    min-height: 100px;
-}
-
-.empty-message {
-    color: #999;
-    text-align: center;
-    font-style: italic;
-}
-
-.ingredient-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background: white;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    border-left: 4px solid #4CAF50;
-}
-
-.ingredient-name {
-    font-weight: 500;
-}
-
-.ingredient-amount {
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-.ingredient-remove {
-    background: #f44336;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.add-ingredient-form {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-}
-
+/* Специфичные стили для формы */
 .amount-input {
     position: relative;
 }
 
 .amount-input input {
-    padding-right: 40px;
+    padding-right: 50px;
 }
 
 #measurement-unit {
@@ -389,38 +186,28 @@
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #777;
+    color: #666;
     font-size: 14px;
+    background: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
 .btn-add-ingredient {
-    background: #FF9800;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.3s;
+    margin-top: 24px;
     height: 46px;
-    align-self: flex-end;
 }
 
-.btn-add-ingredient:hover {
-    background: #F57C00;
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    cursor: pointer;
 }
 
-/* Картинка */
-.current-image-preview {
-    margin-bottom: 15px;
-}
-
-.new-image-preview {
-    margin-top: 15px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 2px dashed #ddd;
+.checkbox-label input[type="checkbox"] {
+    width: auto;
 }
 
 .image-preview {
@@ -431,386 +218,53 @@
     border: 2px solid #ddd;
 }
 
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #666;
-}
-
-.file-upload input[type="file"] {
-    padding: 8px;
+.new-image-preview {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
     border: 2px dashed #ddd;
-    border-radius: 8px;
+}
+
+/* Стили для полей формы Django */
+.form-control {
     width: 100%;
-}
-
-.upload-help {
-    font-size: 0.85rem;
-    color: #777;
-    margin-top: 5px;
-}
-
-/* Кнопки формы */
-.form-actions {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.btn-submit {
-    background: linear-gradient(135deg, #4CAF50, #2E7D32);
-    color: white;
-    border: none;
-    padding: 15px 35px;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    box-sizing: border-box;
 }
 
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+.form-control:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
-.btn-cancel {
-    background: #f5f5f5;
-    color: #666;
-    text-decoration: none;
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s;
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    font-family: inherit;
 }
 
-.btn-cancel:hover {
-    background: #e0e0e0;
-    color: #333;
+@media (max-width: 768px) {
+    .btn-add-ingredient {
+        margin-top: 0;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
 }
-
-/* Стили для уведомлений */
-.error-message {
-    background: #ffebee;
-    color: #d32f2f;
-    padding: 10px 15px;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    border-left: 4px solid #f44336;
-}
-
-.success-message {
-    background: #e8f5e9;
-    color: #2e7d32;
-    padding: 10px 15px;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    border-left: 4px solid #4caf50;
-}
-
-/* Иконки FontAwesome */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 </style>
 
-<script>
-// JavaScript для работы с ингредиентами
-let ingredientsList = [];
-
-// Ждем полной загрузки DOM
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM загружен, инициализация формы...');
-    
-    // Инициализация элементов
-    const ingredientSelect = document.getElementById('ingredient-select');
-    const amountInput = document.getElementById('ingredient-amount');
-    const measurementUnit = document.getElementById('measurement-unit');
-    
-    if (!ingredientSelect || !amountInput || !measurementUnit) {
-        console.error('Не найдены необходимые элементы формы!');
-        return;
-    }
-    
-    // Обновляем единицы измерения при выборе ингредиента
-    ingredientSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const unit = selectedOption.dataset.unit || 'ед.';
-        measurementUnit.textContent = unit;
-        amountInput.focus();
-    });
-    
-    // Автозаполнение при Enter
-    amountInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addIngredient();
-        }
-    });
-    
-    // Предпросмотр изображения
-    const imageInput = document.getElementById('id_image');
-    if (imageInput) {
-        imageInput.addEventListener('change', function(e) {
-            const preview = document.getElementById('image-preview');
-            const previewContainer = document.getElementById('new-image-preview');
-            
-            if (preview && previewContainer && this.files && this.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                }
-                
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-    }
-    
-    // Загружаем существующие ингредиенты при редактировании
-    {% if form.instance.pk and recipe_ingredients %}
-    console.log('Загрузка существующих ингредиентов...');
-    {% for ri in recipe_ingredients %}
-    ingredientsList.push({
-        id: '{{ ri.ingredient.id }}',
-        name: '{{ ri.ingredient.name|escapejs }}',
-        amount: parseFloat({{ ri.amount }}),
-        unit: '{{ ri.ingredient.measurement_unit|escapejs }}'
-    });
-    {% endfor %}
-    updateIngredientsData();
-    updateIngredientsList();
-    {% endif %}
-});
-
-function addIngredient() {
-    console.log('Добавление ингредиента...');
-    
-    const select = document.getElementById('ingredient-select');
-    const amountInput = document.getElementById('ingredient-amount');
-    
-    if (!select || !amountInput) {
-        showError('Не найдены элементы формы!');
-        return;
-    }
-    
-    const ingredientId = select.value;
-    
-    if (!ingredientId) {
-        showError('Пожалуйста, выберите ингредиент');
-        return;
-    }
-    
-    const selectedOption = select.options[select.selectedIndex];
-    const ingredientName = selectedOption.textContent;
-    const amount = parseFloat(amountInput.value);
-    const unit = selectedOption.dataset.unit || 'ед.';
-    
-    // Проверка количества
-    if (!amount || amount <= 0 || isNaN(amount)) {
-        showError('Пожалуйста, укажите корректное количество');
-        amountInput.focus();
-        return;
-    }
-    
-    // Округляем до 2 знаков после запятой
-    const roundedAmount = parseFloat(amount.toFixed(2));
-    
-    // Проверяем, не добавлен ли уже этот ингредиент
-    const existingIndex = ingredientsList.findIndex(item => item.id === ingredientId);
-    
-    if (existingIndex !== -1) {
-        // Обновляем существующий - СНАЧАЛА спрашиваем
-        if (confirm(`Ингредиент "${ingredientName}" уже добавлен. Заменить количество с ${ingredientsList[existingIndex].amount} на ${roundedAmount}?`)) {
-            ingredientsList[existingIndex].amount = roundedAmount;
-            ingredientsList[existingIndex].unit = unit;
-            showSuccess('Количество ингредиента обновлено');
-        } else {
-            return; // Отмена - не обновляем
-        }
-    } else {
-        // Добавляем новый
-        ingredientsList.push({
-            id: ingredientId,
-            name: ingredientName,
-            amount: roundedAmount,
-            unit: unit
-        });
-        showSuccess('Ингредиент добавлен');
-    }
-    
-    // Обновляем данные
-    updateIngredientsData();
-    updateIngredientsList();
-    
-    // Сбрасываем форму
-    select.selectedIndex = 0;
-    amountInput.value = '1';
-    document.getElementById('measurement-unit').textContent = 'ед.';
-    select.focus();
-}
-
-function removeIngredient(ingredientId) {
-    console.log('Удаление ингредиента:', ingredientId);
-    ingredientsList = ingredientsList.filter(item => item.id !== ingredientId);
-    updateIngredientsData();
-    updateIngredientsList();
-    showSuccess('Ингредиент удален');
-}
-
-function updateIngredientsList() {
-    console.log('Обновление списка ингредиентов...');
-    
-    const container = document.getElementById('selected-ingredients');
-    const emptyMessage = document.getElementById('empty-ingredients-message');
-    
-    if (!container) {
-        console.error('Не найден контейнер для ингредиентов!');
-        return;
-    }
-    
-    if (ingredientsList.length === 0) {
-        if (emptyMessage) {
-            emptyMessage.style.display = 'block';
-        }
-        container.innerHTML = '';
-        return;
-    }
-    
-    if (emptyMessage) {
-        emptyMessage.style.display = 'none';
-    }
-    
-    // Очищаем и перерисовываем контейнер
-    container.innerHTML = '';
-    
-    ingredientsList.forEach((ingredient) => {
-        const div = document.createElement('div');
-        div.className = 'ingredient-item';
-        div.setAttribute('data-id', ingredient.id);
-        div.innerHTML = `
-            <div>
-                <span class="ingredient-name">${ingredient.name}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span class="ingredient-amount">${ingredient.amount} ${ingredient.unit}</span>
-                <button type="button" class="ingredient-remove" onclick="removeIngredient('${ingredient.id}')">
-                    <i class="fas fa-trash"></i> Удалить
-                </button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-    
-    console.log('Список ингредиентов обновлен:', ingredientsList);
-}
-
-function updateIngredientsData() {
-    const hiddenInput = document.getElementById('ingredients-data');
-    if (!hiddenInput) {
-        console.error('Не найдено скрытое поле для ингредиентов!');
-        return;
-    }
-    
-    // Формируем данные в правильном формате
-    const backendFormat = ingredientsList.map(ingredient => ({
-        id: ingredient.id,
-        amount: ingredient.amount
-        // Не нужно отправлять name и unit - они есть в базе
-    }));
-    
-    hiddenInput.value = JSON.stringify(backendFormat);
-    console.log('Ингредиенты сохранены для отправки:', backendFormat);
-    console.log('Строка JSON:', hiddenInput.value);
-}
-
-// Функции для показа уведомлений
-let notificationContainer = null;
-
-function showError(message) {
-    console.error('Ошибка:', message);
-    const container = getNotificationContainer();
-    const errorMsg = document.createElement('div');
-    errorMsg.className = 'error-message';
-    errorMsg.innerHTML = `⚠️ ${message}`;
-    container.appendChild(errorMsg);
-    
-    setTimeout(() => {
-        if (errorMsg.parentNode === container) {
-            container.removeChild(errorMsg);
-        }
-    }, 5000);
-}
-
-function showSuccess(message) {
-    console.log('Успех:', message);
-    const container = getNotificationContainer();
-    const successMsg = document.createElement('div');
-    successMsg.className = 'success-message';
-    successMsg.innerHTML = `✅ ${message}`;
-    container.appendChild(successMsg);
-    
-    setTimeout(() => {
-        if (successMsg.parentNode === container) {
-            container.removeChild(successMsg);
-        }
-    }, 3000);
-}
-
-function getNotificationContainer() {
-    if (!notificationContainer) {
-        notificationContainer = document.getElementById('form-errors');
-        if (!notificationContainer) {
-            notificationContainer = document.createElement('div');
-            notificationContainer.id = 'form-errors';
-            notificationContainer.style.position = 'fixed';
-            notificationContainer.style.top = '20px';
-            notificationContainer.style.right = '20px';
-            notificationContainer.style.zIndex = '10000';
-            notificationContainer.style.maxWidth = '300px';
-            document.body.appendChild(notificationContainer);
-        }
-    }
-    return notificationContainer;
-}
-
-document.getElementById('recipe-form').addEventListener('submit', function(e) {
-    // Проверяем, есть ли ингредиенты
-    if (ingredientsList.length === 0) {
-        e.preventDefault();
-        showError('Добавьте хотя бы один ингредиент!');
-        return;
-    }
-    
-    // Проверяем, что все ингредиенты имеют количество > 0
-    const invalidIngredients = ingredientsList.filter(item => 
-        !item.amount || item.amount <= 0 || isNaN(item.amount)
-    );
-    
-    if (invalidIngredients.length > 0) {
-        e.preventDefault();
-        showError('У некоторых ингредиентов некорректное количество');
-        return;
-    }
-    
-    // Отладочная информация
-    console.log('Форма отправляется. Ингредиенты:', ingredientsList);
-    console.log('Скрытое поле:', document.getElementById('ingredients-data').value);
-});
-
-// Экспортируем функции в глобальную область видимости
-window.addIngredient = addIngredient;
-window.removeIngredient = removeIngredient;
-</script>
+{% block extra_js %}
+<script src="{% static 'js/recipe_form.js' %}"></script>
+{% endblock %}
 {% endblock %}

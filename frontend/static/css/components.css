@@ -1,8 +1,8 @@
-/* Дополнительные стили для специфических компонентов */
+/* Специфичные компоненты, которые не вошли в основные стили */
 
 /* Профиль пользователя */
 .profile-container {
-    padding: 30px;
+    padding: 30px 0;
 }
 
 .profile-header {
@@ -12,12 +12,14 @@
     margin-bottom: 40px;
     padding-bottom: 30px;
     border-bottom: 2px solid #eee;
+    flex-wrap: wrap;
 }
 
 .profile-avatar {
     position: relative;
     width: 150px;
     height: 150px;
+    flex-shrink: 0;
 }
 
 .profile-avatar img {
@@ -57,6 +59,7 @@
     display: flex;
     gap: 30px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .stat {
@@ -80,6 +83,7 @@
     gap: 10px;
     margin-bottom: 30px;
     border-bottom: 1px solid #ddd;
+    flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -90,6 +94,7 @@
     cursor: pointer;
     font-size: 16px;
     color: #666;
+    transition: all 0.3s;
 }
 
 .tab-btn.active {
@@ -120,6 +125,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .author-link {
@@ -135,6 +142,7 @@
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .author-info h3 {
@@ -178,11 +186,12 @@
     margin-top: 10px;
     color: #4CAF50;
     text-decoration: none;
+    font-weight: 500;
 }
 
 /* Страница рецепта */
 .recipe-detail {
-    max-width: 1000px;
+    max-width: 1200px;
 }
 
 .recipe-header {
@@ -192,11 +201,18 @@
     margin-bottom: 40px;
 }
 
+@media (max-width: 992px) {
+    .recipe-header {
+        grid-template-columns: 1fr;
+    }
+}
+
 .recipe-image img {
     width: 100%;
     height: 400px;
     object-fit: cover;
     border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
 .recipe-actions-top {
@@ -204,24 +220,6 @@
     gap: 10px;
     margin-top: 15px;
     flex-wrap: wrap;
-}
-
-.btn-edit, .btn-delete {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.btn-edit {
-    background-color: #2196F3;
-    color: white;
-}
-
-.btn-delete {
-    background-color: #f44336;
-    color: white;
 }
 
 .recipe-info h1 {
@@ -261,20 +259,23 @@
     margin-bottom: 40px;
 }
 
-.ingredients-section {
+@media (max-width: 992px) {
+    .recipe-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ingredients-section,
+.instructions-section {
     background: white;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.ingredients-section h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
 .ingredients-list {
     list-style: none;
+    padding: 0;
 }
 
 .ingredients-list li {
@@ -284,11 +285,8 @@
     border-bottom: 1px solid #eee;
 }
 
-.instructions-section {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.ingredients-list li:last-child {
+    border-bottom: none;
 }
 
 .recipe-description {
@@ -301,13 +299,6 @@
     gap: 10px;
     margin-top: 20px;
     flex-wrap: wrap;
-}
-
-.tag {
-    padding: 5px 15px;
-    border-radius: 20px;
-    color: white;
-    font-size: 14px;
 }
 
 .recipe-share {
@@ -343,6 +334,12 @@
     gap: 20px;
 }
 
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 .tags-container {
     display: flex;
     gap: 15px;
@@ -355,14 +352,14 @@
     gap: 5px;
 }
 
-.ingredients-section {
+.ingredients-section-form {
     background: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
 }
 
-#selected-ingredients {
+.selected-ingredients {
     margin-top: 20px;
 }
 
@@ -384,6 +381,9 @@
     height: 24px;
     border-radius: 50%;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .form-actions {
@@ -391,30 +391,7 @@
     gap: 20px;
     justify-content: center;
     margin-top: 30px;
-}
-
-.btn-primary {
-    background: #4CAF50;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.btn-cancel {
-    background: #999;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
+    flex-wrap: wrap;
 }
 
 /* Список покупок */
@@ -427,14 +404,18 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .shopping-actions {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
-.btn-download, .btn-clear {
+.btn-download,
+.btn-clear {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
@@ -459,12 +440,19 @@
     margin-bottom: 30px;
     display: flex;
     gap: 30px;
+    flex-wrap: wrap;
 }
 
 .shopping-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
+}
+
+@media (max-width: 992px) {
+    .shopping-content {
+        grid-template-columns: 1fr;
+    }
 }
 
 .selected-recipes {
@@ -511,7 +499,7 @@
     justify-content: center;
 }
 
-.ingredients-list {
+.ingredients-list-shopping {
     background: white;
     border-radius: 8px;
     overflow: hidden;
@@ -546,10 +534,6 @@
 }
 
 /* Страницы "О проекте" и "Технологии" */
-.page-container {
-    max-width: 1000px;
-}
-
 .about-hero img {
     width: 100%;
     height: 300px;
@@ -571,6 +555,9 @@
 .features-list li {
     padding: 10px 0;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .how-it-works {
@@ -615,11 +602,6 @@
 
 .tech-category {
     margin-bottom: 40px;
-}
-
-.tech-category h2 {
-    margin-bottom: 20px;
-    color: #333;
 }
 
 .tech-list {
@@ -678,31 +660,6 @@
     font-size: 18px;
 }
 
-/* Сообщения и уведомления */
-.alert {
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-
-.alert-error {
-    background: #ffebee;
-    color: #c62828;
-    border: 1px solid #ffcdd2;
-}
-
-.alert-success {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-}
-
-.alert-info {
-    background: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #bbdefb;
-}
-
 /* Состояние пустого списка */
 .empty-state {
     text-align: center;
@@ -726,78 +683,83 @@
     margin-bottom: 30px;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
-    
-    .recipe-header,
-    .recipe-content,
-    .shopping-content {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .recipe-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .shopping-header {
-        flex-direction: column;
-        gap: 20px;
-        align-items: stretch;
-    }
-    
-    .shopping-actions {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    
-    .tech-list {
-        grid-template-columns: 1fr;
-    }
+/* Карточка рецепта (компонент) */
+.recipe-card-info {
+    padding: 0 15px 15px;
 }
 
-/* Анимации */
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
+.recipe-author, .recipe-time {
+    margin-bottom: 10px;
+    color: #666;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.recipe-tags-mini {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
 }
 
-.pulse {
-    animation: pulse 2s infinite;
+.recipe-card-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 15px 15px;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+/* Ошибки */
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    text-align: center;
 }
 
-/* Кастомный скроллбар */
-::-webkit-scrollbar {
-    width: 10px;
+.error-content h1 {
+    font-size: 120px;
+    margin-bottom: 20px;
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
+.error-404 .error-content h1 {
+    color: #4CAF50;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
+.error-500 .error-content h1 {
+    color: #f44336;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
+.error-content h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.error-content p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Удаление рецепта */
+.delete-confirm-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.recipe-preview {
+    margin: 25px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.warning-message {
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 25px 0;
+    text-align: left;
 }

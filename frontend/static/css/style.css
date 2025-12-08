@@ -1,4 +1,5 @@
-/* Основные стили */
+/* Базовые стили и утилиты */
+
 * {
     margin: 0;
     padding: 0;
@@ -12,10 +13,24 @@ body {
     background-color: #f5f5f5;
 }
 
+/* Контейнеры */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 20px;
+}
+
+.page-container {
+    max-width: 1000px;
+}
+
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Шапка */
@@ -30,12 +45,13 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
+    flex-wrap: wrap;
 }
 
 nav a {
     color: white;
     text-decoration: none;
-    margin-left: 20px;
+    margin: 0 10px;
     padding: 5px 10px;
     border-radius: 3px;
     transition: background-color 0.3s;
@@ -45,7 +61,110 @@ nav a:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Карточки рецептов */
+/* Заголовки */
+h1, h2, h3, h4 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+}
+
+/* Кнопки */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #d32f2f;
+}
+
+.btn-edit {
+    background-color: #2196F3;
+    color: white;
+}
+
+.btn-cancel {
+    background-color: #999;
+    color: white;
+}
+
+.favorite-btn {
+    background-color: #ffd700;
+    color: #333;
+}
+
+.favorite-btn:hover {
+    background-color: #ffed4a;
+}
+
+.shopping-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.shopping-btn:hover {
+    background-color: #45a049;
+}
+
+/* Формы */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Карточки */
 .recipe-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -71,78 +190,15 @@ nav a:hover {
     object-fit: cover;
 }
 
-.recipe-card h3 {
+.recipe-card-content {
     padding: 15px;
-    margin: 0;
-}
-
-.recipe-card p {
-    padding: 0 15px;
-    color: #666;
 }
 
 .recipe-actions {
-    padding: 15px;
     display: flex;
     gap: 10px;
-}
-
-/* Кнопки */
-button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
-.favorite-btn {
-    background-color: #ffd700;
-    color: #333;
-}
-
-.favorite-btn:hover {
-    background-color: #ffed4a;
-}
-
-.shopping-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.shopping-btn:hover {
-    background-color: #45a049;
-}
-
-/* Формы */
-.form-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+    padding: 15px;
+    padding-top: 0;
 }
 
 /* Пагинация */
@@ -152,6 +208,7 @@ button {
     align-items: center;
     gap: 10px;
     margin-top: 30px;
+    flex-wrap: wrap;
 }
 
 .pagination a {
@@ -172,6 +229,31 @@ button {
     border-radius: 4px;
 }
 
+/* Сообщения */
+.alert {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.alert-error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
 /* Подвал */
 footer {
     background-color: #333;
@@ -181,20 +263,32 @@ footer {
     margin-top: 50px;
 }
 
-.tag-mini {
-    padding: 3px 8px;
-    border-radius: 12px;
-    color: white;
+/* Теги */
+.tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
+    color: white;
 }
 
-/* Цвета по умолчанию для популярных тегов */
 .tag-breakfast { background-color: #FF9800; }
 .tag-lunch { background-color: #2196F3; }
 .tag-dinner { background-color: #4CAF50; }
 .tag-dessert { background-color: #9C27B0; }
 .tag-vegetarian { background-color: #8BC34A; }
+
+.tag-mini {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* Утилиты */
+.text-center { text-align: center; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.w-100 { width: 100%; }
 
 /* Адаптивность */
 @media (max-width: 768px) {
@@ -205,9 +299,62 @@ footer {
     nav {
         flex-direction: column;
         gap: 10px;
+        padding: 10px;
     }
     
     nav a {
-        margin: 0;
+        margin: 5px 0;
+        display: block;
+        text-align: center;
     }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+}
+
+/* Анимации */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Кастомный скроллбар */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

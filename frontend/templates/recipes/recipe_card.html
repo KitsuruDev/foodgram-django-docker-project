@@ -1,39 +1,124 @@
+{% load static %}
+
 <div class="recipe-card">
-    <a href="{% url 'detail_recipe' recipe.id %}">
+    <a href="{% url 'detail_recipe' recipe.id %}" class="recipe-link">
         {% if recipe.image %}
-            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" loading="lazy">
         {% else %}
-            <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image">
+            <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image" loading="lazy">
         {% endif %}
-        <h3>{{ recipe.title }}</h3>
-    </a>
-    <div class="recipe-card-info">
-        <p class="recipe-author">
-            Автор: <a href="{% url 'users:profile' recipe.author.username %}">
-                {{ recipe.author.get_full_name }}
-            </a>
-        </p>
-        <p class="recipe-time">⏱️ {{ recipe.cooking_time }} мин</p>
-        
-        {% if recipe.tags.all %}
-        <div class="recipe-tags-mini">
-            {% for tag in recipe.tags.all %}
-            <span class="tag-mini tag-{{ tag.name|slugify }}">{{ tag.name|slice:"3" }}</span>
-            {% endfor %}
+        <div class="recipe-card-content">
+            <h3>{{ recipe.title|truncatechars:40 }}</h3>
+            <div class="recipe-card-info">
+                <p class="recipe-author">
+                    <i class="fas fa-user"></i>
+                    <a href="{% url 'users:profile' recipe.author.username %}">
+                        {{ recipe.author.get_full_name|default:recipe.author.username }}
+                    </a>
+                </p>
+                <p class="recipe-time">
+                    <i class="fas fa-clock"></i> {{ recipe.cooking_time }} мин
+                </p>
+                
+                {% if recipe.tags.all %}
+                <div class="recipe-tags-mini">
+                    {% for tag in recipe.tags.all|slice:":3" %}
+                    <span class="tag tag-mini tag-{{ tag.name|slugify }}">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
-    </div>
+    </a>
     
     {% if user.is_authenticated %}
     <div class="recipe-card-actions">
         <button class="favorite-btn {% if recipe.is_favorited %}active{% endif %}" 
-                data-recipe-id="{{ recipe.id }}">
-            {% if recipe.is_favorited %}★{% else %}☆{% endif %}
+                data-recipe-id="{{ recipe.id }}"
+                title="{% if recipe.is_favorited %}Убрать из избранного{% else %}В избранное{% endif %}">
+            <i class="fas fa-star"></i>
+            <span class="btn-text">{% if recipe.is_favorited %}Убрать{% else %}В избранное{% endif %}</span>
         </button>
         <button class="shopping-btn {% if recipe.is_in_shopping_cart %}active{% endif %}" 
-                data-recipe-id="{{ recipe.id }}">
-            {% if recipe.is_in_shopping_cart %}✓{% else %}＋{% endif %}
+                data-recipe-id="{{ recipe.id }}"
+                title="{% if recipe.is_in_shopping_cart %}Убрать из списка покупок{% else %}Добавить в список покупок{% endif %}">
+            <i class="fas fa-{% if recipe.is_in_shopping_cart %}check{% else %}plus{% endif %}"></i>
+            <span class="btn-text">{% if recipe.is_in_shopping_cart %}В списке{% else %}В покупки{% endif %}</span>
         </button>
     </div>
     {% endif %}
 </div>
+
+<style>
+.recipe-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.recipe-card-info {
+    margin-top: 10px;
+}
+
+.recipe-author, .recipe-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.recipe-author a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.recipe-author a:hover {
+    text-decoration: underline;
+}
+
+.recipe-tags-mini {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.recipe-card-actions {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    padding-top: 0;
+}
+
+.recipe-card-actions button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.btn-text {
+    display: inline;
+}
+
+@media (max-width: 768px) {
+    .btn-text {
+        display: none;
+    }
+    
+    .recipe-card-actions button {
+        padding: 8px;
+    }
+    
+    .recipe-card-actions button i {
+        margin: 0;
+    }
+}
+</style>

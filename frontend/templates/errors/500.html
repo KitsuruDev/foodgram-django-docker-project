@@ -4,51 +4,43 @@
 {% block title %}Ошибка сервера - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container error-container">
+<div class="container error-container error-500">
     <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
         <h1>500</h1>
         <h2>Внутренняя ошибка сервера</h2>
         <p>Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.</p>
-        <a href="{% url 'index' %}" class="btn-primary">На главную</a>
+        <div class="error-actions">
+            <a href="{% url 'index' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> На главную
+            </a>
+            <button onclick="location.reload()" class="btn btn-secondary">
+                <i class="fas fa-redo"></i> Обновить страницу
+            </button>
+        </div>
+        <div class="error-help">
+            <p>Если ошибка повторяется, пожалуйста, свяжитесь с поддержкой.</p>
+        </div>
     </div>
 </div>
 
 <style>
-.error-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 70vh;
-    text-align: center;
-}
-
-.error-content h1 {
-    font-size: 120px;
+.error-500 .error-icon {
     color: #f44336;
-    margin-bottom: 20px;
 }
 
-.error-content h2 {
-    font-size: 36px;
-    margin-bottom: 20px;
-    color: #333;
+.error-500 h1 {
+    color: #f44336;
 }
 
-.error-content p {
-    font-size: 18px;
-    color: #666;
-    margin-bottom: 30px;
-}
-
-.btn-primary {
-    display: inline-block;
-    background: #4CAF50;
-    color: white;
-    padding: 12px 30px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
+.error-help {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    color: #999;
+    font-size: 14px;
 }
 </style>
 {% endblock %}

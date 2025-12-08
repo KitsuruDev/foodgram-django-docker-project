@@ -4,13 +4,25 @@
 {% block title %}Вход - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2 class="text-center">Вход в систему</h2>
+<div class="form-container">
+    <h2 class="text-center"><i class="fas fa-sign-in-alt"></i> Вход в систему</h2>
     
     {% if form.errors %}
-    <div class="alert alert-danger">
-        Неверное имя пользователя или пароль.
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> Неверное имя пользователя или пароль.
     </div>
+    {% endif %}
+    
+    {% if next %}
+        {% if user.is_authenticated %}
+        <div class="alert alert-error">
+            У вашего аккаунта нет доступа к этой странице.
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            Пожалуйста, войдите, чтобы увидеть эту страницу.
+        </div>
+        {% endif %}
     {% endif %}
     
     <form method="post" action="{% url 'login' %}">
@@ -18,105 +30,96 @@
         
         <div class="form-group">
             <label for="id_username">Логин (почта):</label>
-            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+            <div class="input-with-icon">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" id="id_username" class="form-control" required autofocus
+                       placeholder="Введите ваш логин или email">
+            </div>
         </div>
         
         <div class="form-group">
             <label for="id_password">Пароль:</label>
-            <input type="password" name="password" id="id_password" class="form-control" required>
+            <div class="input-with-icon">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="id_password" class="form-control" required
+                       placeholder="Введите ваш пароль">
+                <button type="button" class="toggle-password" data-target="id_password">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
         </div>
         
-        <button type="submit" class="btn btn-primary w-100">Войти</button>
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-sign-in-alt"></i> Войти
+        </button>
         <input type="hidden" name="next" value="{{ next }}">
     </form>
     
     <div class="text-center mt-4">
-        <p>Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрируйтесь</a></p>
-        <a href="/" class="btn btn-link">На главную</a>
+        <p>Нет аккаунта? <a href="{% url 'signup' %}" class="link">Зарегистрируйтесь</a></p>
+        <p><a href="/" class="btn btn-link"><i class="fas fa-home"></i> На главную</a></p>
     </div>
 </div>
 
 <style>
-.container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.input-with-icon {
+    position: relative;
 }
 
-.form-group {
-    margin-bottom: 1rem;
+.input-with-icon i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+.input-with-icon input {
+    padding-left: 45px;
+    padding-right: 45px;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 1rem;
-}
-
-.btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
     border: none;
-    border-radius: 4px;
+    color: #666;
     cursor: pointer;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 16px;
 }
 
-.btn-primary {
-    background-color: #4CAF50;
-    color: white;
-    transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-    background-color: #45a049;
-}
-
-.w-100 {
-    width: 100%;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.mt-4 {
-    margin-top: 1.5rem;
-}
-
-.btn-link {
+.link {
     color: #4CAF50;
     text-decoration: none;
+    font-weight: 500;
 }
 
-.btn-link:hover {
+.link:hover {
     text-decoration: underline;
 }
-
-.alert {
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Показать/скрыть пароль
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

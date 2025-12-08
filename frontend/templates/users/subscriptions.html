@@ -4,83 +4,115 @@
 {% block title %}Мои подписки - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1>Мои подписки</h1>
-        <p>Вы подписаны на {{ authors_count }} авторов</p>
-    </div>
-    
-    {% if authors %}
-    <div class="subscriptions-list">
-        {% for author in authors %}
-        <div class="author-card">
-            <div class="author-header">
-                <a href="{% url 'users:profile' author.username %}" class="author-link">
-                    {% if author.profile.avatar %}
-                        <img src="{{ author.profile.avatar.url }}" alt="Аватар" class="author-avatar">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="author-avatar">
-                    {% endif %}
-                    <div class="author-info">
-                        <h3>{{ author.get_full_name }}</h3>
-                        <p class="username">@{{ author.username }}</p>
+<div class="page-header">
+    <h1><i class="fas fa-users"></i> Мои подписки</h1>
+    <p>Вы подписаны на <strong>{{ authors_count }}</strong> авторов</p>
+</div>
+
+{% if authors %}
+<div class="subscriptions-list">
+    {% for author in authors %}
+    <div class="author-card">
+        <div class="author-header">
+            <a href="{% url 'users:profile' author.username %}" class="author-link">
+                {% if author.profile.avatar %}
+                    <img src="{{ author.profile.avatar.url }}" alt="Аватар {{ author.username }}" class="author-avatar" loading="lazy">
+                {% else %}
+                    <div class="author-avatar default-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                </a>
-                
-                <button class="subscribe-btn active" data-author-id="{{ author.id }}">
-                    ✓ Подписан
-                </button>
-            </div>
-            
-            <div class="author-recipes">
-                {% for recipe in author.recipes.all|slice:":3" %}
-                <div class="author-recipe">
-                    <a href="{% url 'detail_recipe' recipe.id %}">
-                        {% if recipe.image %}
-                            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
-                        {% endif %}
-                        <span>{{ recipe.title }}</span>
-                    </a>
-                </div>
-                {% empty %}
-                <p class="no-recipes">У автора пока нет рецептов</p>
-                {% endfor %}
-                
-                {% if author.recipes.count > 3 %}
-                <a href="{% url 'users:profile' author.username %}" class="view-more">
-                    Ещё {{ author.recipes.count|add:"-3" }} рецептов →
-                </a>
                 {% endif %}
-            </div>
+                <div class="author-info">
+                    <h3>{{ author.get_full_name|default:author.username }}</h3>
+                    <p class="username">@{{ author.username }}</p>
+                    <p class="recipe-count">{{ author.recipes.count }} рецептов</p>
+                </div>
+            </a>
+            
+            <button class="btn subscribe-btn active" data-author-id="{{ author.id }}">
+                <i class="fas fa-check"></i> Подписан
+            </button>
         </div>
-        {% endfor %}
-    </div>
-    
-    {% if is_paginated %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">« Первая</a>
-            <a href="?page={{ page_obj.previous_page_number }}">‹ Предыдущая</a>
-        {% endif %}
         
-        <span class="current">
-            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-        </span>
-        
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">Следующая ›</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
-        {% endif %}
+        <div class="author-recipes">
+            {% for recipe in author.recipes.all|slice:":3" %}
+            <div class="author-recipe">
+                <a href="{% url 'detail_recipe' recipe.id %}">
+                    {% if recipe.image %}
+                        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" loading="lazy">
+                    {% else %}
+                        <img src="{% static 'images/default-recipe.jpg' %}" alt="Default recipe image" loading="lazy">
+                    {% endif %}
+                    <span>{{ recipe.title|truncatechars:30 }}</span>
+                </a>
+            </div>
+            {% empty %}
+            <p class="no-recipes">У автора пока нет рецептов</p>
+            {% endfor %}
+            
+            {% if author.recipes.count > 3 %}
+            <a href="{% url 'users:profile' author.username %}" class="view-more">
+                Ещё {{ author.recipes.count|add:"-3" }} рецептов <i class="fas fa-arrow-right"></i>
+            </a>
+            {% endif %}
+        </div>
     </div>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page=1">« Первая</a>
+        <a href="?page={{ page_obj.previous_page_number }}">‹ Предыдущая</a>
     {% endif %}
     
-    {% else %}
-    <div class="empty-state">
-        <img src="{% static 'images/empty-subscriptions.svg' %}" alt="Нет подписок">
-        <h3>Вы пока ни на кого не подписаны</h3>
-        <p>Находите интересных авторов и подписывайтесь на их рецепты</p>
-        <a href="{% url 'index' %}" class="btn-primary">Найти авторов</a>
-    </div>
+    <span class="current">
+        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+    </span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Следующая ›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
     {% endif %}
 </div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <img src="{% static 'images/empty-subscriptions.svg' %}" alt="Нет подписок" loading="lazy">
+    <h3>Вы пока ни на кого не подписаны</h3>
+    <p>Находите интересных авторов и подписывайтесь на их рецепты</p>
+    <a href="{% url 'index' %}" class="btn btn-primary">
+        <i class="fas fa-search"></i> Найти авторов
+    </a>
+</div>
+{% endif %}
+
+<style>
+.recipe-count {
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.default-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #4CAF50;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.no-recipes {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+</style>
 {% endblock %}

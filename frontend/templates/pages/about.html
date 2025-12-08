@@ -4,14 +4,14 @@
 {% block title %}О проекте - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container page-container">
+<div class="page-container">
     <div class="page-header">
-        <h1>О проекте Foodgram</h1>
+        <h1><i class="fas fa-info-circle"></i> О проекте Foodgram</h1>
     </div>
     
     <div class="page-content">
         <div class="about-hero">
-            <img src="{% static 'images/about-hero.jpg' %}" alt="Foodgram - платформа для обмена рецептами">
+            <img src="{% static 'images/about-hero.jpg' %}" alt="Foodgram - платформа для обмена рецептами" loading="lazy">
         </div>
         
         <div class="about-content">
@@ -20,17 +20,17 @@
             <p>Foodgram — это онлайн-платформа для любителей кулинарии, где вы можете:</p>
             
             <ul class="features-list">
-                <li>💡 Делиться своими рецептами с сообществом</li>
-                <li>⭐ Сохранять понравившиеся рецепты в избранное</li>
-                <li>👥 Подписываться на авторов, чьи рецепты вам нравятся</li>
-                <li>🛒 Создавать список покупок для выбранных рецептов</li>
-                <li>📱 Получать доступ к своим рецептам с любого устройства</li>
+                <li><i class="fas fa-lightbulb"></i> Делиться своими рецептами с сообществом</li>
+                <li><i class="fas fa-star"></i> Сохранять понравившиеся рецепты в избранное</li>
+                <li><i class="fas fa-users"></i> Подписываться на авторов, чьи рецепты вам нравятся</li>
+                <li><i class="fas fa-shopping-cart"></i> Создавать список покупок для выбранных рецептов</li>
+                <li><i class="fas fa-mobile-alt"></i> Получать доступ к своим рецептам с любого устройства</li>
             </ul>
             
-            <h3>Наша миссия</h3>
+            <h3><i class="fas fa-bullseye"></i> Наша миссия</h3>
             <p>Мы хотим сделать кулинарию доступной и увлекательной для всех. Независимо от того, являетесь ли вы опытным шеф-поваром или только начинаете свой кулинарный путь — Foodgram поможет вам находить вдохновение, учиться новому и радовать близких вкусными блюдами.</p>
             
-            <h3>Как это работает?</h3>
+            <h3><i class="fas fa-cogs"></i> Как это работает?</h3>
             <div class="how-it-works">
                 <div class="step">
                     <div class="step-number">1</div>
@@ -55,13 +55,53 @@
             </div>
             
             <div class="cta-section">
-                <h3>Присоединяйтесь к нам!</h3>
+                <h3><i class="fas fa-handshake"></i> Присоединяйтесь к нам!</h3>
                 <p>Станьте частью нашего растущего сообщества любителей кулинарии</p>
                 {% if not user.is_authenticated %}
-                <a href="{% url 'signup' %}" class="btn-primary">Зарегистрироваться</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Зарегистрироваться
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.cta-section {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    border-radius: 12px;
+    margin-top: 50px;
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+.cta-section h3 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.cta-section p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    opacity: 0.9;
+}
+
+.cta-section .btn {
+    background: white;
+    color: #4CAF50;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.cta-section .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+}
+</style>
 {% endblock %}

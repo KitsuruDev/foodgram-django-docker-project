@@ -4,32 +4,32 @@
 {% block title %}Технологии - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container page-container">
+<div class="page-container">
     <div class="page-header">
-        <h1>Технологии проекта</h1>
+        <h1><i class="fas fa-code"></i> Технологии проекта</h1>
     </div>
     
     <div class="tech-stack">
         <div class="tech-category">
-            <h2>🖥️ Бэкенд</h2>
+            <h2><i class="fas fa-server"></i> Бэкенд</h2>
             <div class="tech-list">
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/django.svg' %}" alt="Django">
+                    <img src="{% static 'images/tech/django.svg' %}" alt="Django" loading="lazy">
                     <h3>Django</h3>
                     <p>Python-фреймворк для быстрой разработки веб-приложений</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/drf.svg' %}" alt="Django REST Framework">
+                    <img src="{% static 'images/tech/drf.svg' %}" alt="Django REST Framework" loading="lazy">
                     <h3>Django REST Framework</h3>
                     <p>Инструментарий для создания RESTful API</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/postgresql.svg' %}" alt="PostgreSQL">
+                    <img src="{% static 'images/tech/postgresql.svg' %}" alt="PostgreSQL" loading="lazy">
                     <h3>PostgreSQL</h3>
                     <p>Мощная реляционная база данных</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/gunicorn.svg' %}" alt="Gunicorn">
+                    <img src="{% static 'images/tech/gunicorn.svg' %}" alt="Gunicorn" loading="lazy">
                     <h3>Gunicorn</h3>
                     <p>WSGI HTTP-сервер для Python-приложений</p>
                 </div>
@@ -37,20 +37,20 @@
         </div>
         
         <div class="tech-category">
-            <h2>🎨 Фронтенд</h2>
+            <h2><i class="fas fa-paint-brush"></i> Фронтенд</h2>
             <div class="tech-list">
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/html5.svg' %}" alt="HTML5">
+                    <img src="{% static 'images/tech/html5.svg' %}" alt="HTML5" loading="lazy">
                     <h3>HTML5</h3>
                     <p>Семантическая разметка веб-страниц</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/css3.svg' %}" alt="CSS3">
+                    <img src="{% static 'images/tech/css3.svg' %}" alt="CSS3" loading="lazy">
                     <h3>CSS3</h3>
                     <p>Стилизация и адаптивный дизайн</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/javascript.svg' %}" alt="JavaScript">
+                    <img src="{% static 'images/tech/javascript.svg' %}" alt="JavaScript" loading="lazy">
                     <h3>JavaScript</h3>
                     <p>Интерактивность и работа с API</p>
                 </div>
@@ -58,25 +58,25 @@
         </div>
         
         <div class="tech-category">
-            <h2>🐳 DevOps</h2>
+            <h2><i class="fas fa-cogs"></i> DevOps</h2>
             <div class="tech-list">
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/docker.svg' %}" alt="Docker">
+                    <img src="{% static 'images/tech/docker.svg' %}" alt="Docker" loading="lazy">
                     <h3>Docker</h3>
                     <p>Контейнеризация приложения</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/nginx.svg' %}" alt="Nginx">
+                    <img src="{% static 'images/tech/nginx.svg' %}" alt="Nginx" loading="lazy">
                     <h3>Nginx</h3>
                     <p>Веб-сервер и реверс-прокси</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/github-actions.svg' %}" alt="GitHub Actions">
+                    <img src="{% static 'images/tech/github-actions.svg' %}" alt="GitHub Actions" loading="lazy">
                     <h3>GitHub Actions</h3>
                     <p>CI/CD для автоматизации развертывания</p>
                 </div>
                 <div class="tech-item">
-                    <img src="{% static 'images/tech/dockerhub.svg' %}" alt="Docker Hub">
+                    <img src="{% static 'images/tech/dockerhub.svg' %}" alt="Docker Hub" loading="lazy">
                     <h3>Docker Hub</h3>
                     <p>Хранилище Docker-образов</p>
                 </div>
@@ -84,21 +84,25 @@
         </div>
         
         <div class="tech-category">
-            <h2>🔧 Библиотеки и инструменты</h2>
+            <h2><i class="fas fa-tools"></i> Библиотеки и инструменты</h2>
             <div class="tech-list">
                 <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-user-shield"></i></div>
                     <h3>Djoser</h3>
                     <p>Аутентификация и регистрация пользователей через API</p>
                 </div>
                 <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-image"></i></div>
                     <h3>Pillow</h3>
                     <p>Обработка изображений в Python</p>
                 </div>
                 <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-vial"></i></div>
                     <h3>Pytest</h3>
                     <p>Тестирование кода</p>
                 </div>
                 <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-code"></i></div>
                     <h3>Black & Flake8</h3>
                     <p>Форматирование и проверка кода</p>
                 </div>
@@ -107,25 +111,69 @@
     </div>
     
     <div class="architecture-section">
-        <h2>Архитектура проекта</h2>
+        <h2><i class="fas fa-sitemap"></i> Архитектура проекта</h2>
         <div class="architecture-diagram">
             <div class="arch-layer">
-                <h3>Клиентский уровень</h3>
+                <h3><i class="fas fa-desktop"></i> Клиентский уровень</h3>
                 <p>Веб-браузер → HTML/CSS/JavaScript</p>
             </div>
             <div class="arch-layer">
-                <h3>Уровень представления</h3>
+                <h3><i class="fas fa-globe"></i> Уровень представления</h3>
                 <p>Nginx → Статика и проксирование запросов</p>
             </div>
             <div class="arch-layer">
-                <h3>Прикладной уровень</h3>
+                <h3><i class="fas fa-cogs"></i> Прикладной уровень</h3>
                 <p>Django + Gunicorn → Обработка бизнес-логики</p>
             </div>
             <div class="arch-layer">
-                <h3>Уровень данных</h3>
+                <h3><i class="fas fa-database"></i> Уровень данных</h3>
                 <p>PostgreSQL → Хранение данных</p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.tech-icon {
+    width: 50px;
+    height: 50px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+}
+
+.tech-item img, .tech-icon {
+    transition: transform 0.3s;
+}
+
+.tech-item:hover img,
+.tech-item:hover .tech-icon {
+    transform: scale(1.1);
+}
+
+.architecture-diagram .arch-layer {
+    margin-bottom: 15px;
+    transition: transform 0.3s;
+}
+
+.architecture-diagram .arch-layer:hover {
+    transform: translateX(10px);
+}
+
+.architecture-diagram .arch-layer h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.architecture-diagram .arch-layer i {
+    font-size: 20px;
+}
+</style>
 {% endblock %}

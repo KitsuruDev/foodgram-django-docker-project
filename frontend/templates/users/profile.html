@@ -1,29 +1,38 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ profile_user.get_full_name }} - Foodgram{% endblock %}
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} - Foodgram{% endblock %}
 
 {% block content %}
-<div class="container profile-container">
+<div class="profile-container">
     <div class="profile-header">
         <div class="profile-avatar">
             {% if profile_user.profile.avatar %}
-                <img src="{{ profile_user.profile.avatar.url }}" alt="Аватар {{ profile_user.username }}">
+                <img src="{{ profile_user.profile.avatar.url }}" alt="Аватар {{ profile_user.username }}" loading="lazy">
             {% else %}
-                <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию">
+                <div class="default-avatar-large">
+                    <i class="fas fa-user"></i>
+                </div>
             {% endif %}
             
             {% if user == profile_user %}
             <button class="btn-change-avatar" onclick="document.getElementById('avatar-input').click()">
-                Изменить фото
+                <i class="fas fa-camera"></i> Изменить фото
             </button>
-            <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+            <form method="post" action="{% url 'users:update_avatar' %}" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="file" id="avatar-input" name="avatar" accept="image/*" onchange="this.form.submit()">
+            </form>
             {% endif %}
         </div>
         
         <div class="profile-info">
-            <h1>{{ profile_user.get_full_name }}</h1>
+            <h1>{{ profile_user.get_full_name|default:profile_user.username }}</h1>
             <p class="username">@{{ profile_user.username }}</p>
+            
+            {% if profile_user.profile.bio %}
+            <p class="bio">{{ profile_user.profile.bio }}</p>
+            {% endif %}
             
             <div class="profile-stats">
                 <div class="stat">
@@ -41,58 +50,175 @@
             </div>
             
             {% if user.is_authenticated and user != profile_user %}
-            <button class="subscribe-btn" data-author-id="{{ profile_user.id }}">
-                {% if is_subscribed %}✓ Подписан{% else %}＋ Подписаться{% endif %}
+            <button class="btn subscribe-btn {% if is_subscribed %}active{% endif %}" 
+                    data-author-id="{{ profile_user.id }}">
+                {% if is_subscribed %}<i class="fas fa-check"></i> Подписан{% else %}<i class="fas fa-plus"></i> Подписаться{% endif %}
             </button>
+            {% endif %}
+            
+            {% if user == profile_user %}
+            <div class="profile-actions">
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Редактировать профиль
+                </a>
+                <a href="{% url 'password_change' %}" class="btn btn-link">
+                    <i class="fas fa-key"></i> Сменить пароль
+                </a>
+            </div>
             {% endif %}
         </div>
     </div>
     
     <div class="profile-tabs">
-        <button class="tab-btn active" data-tab="recipes">Рецепты</button>
+        <button class="tab-btn active" data-tab="recipes">
+            <i class="fas fa-utensils"></i> Рецепты
+        </button>
         {% if user == profile_user %}
-        <button class="tab-btn" data-tab="favorites">Избранное</button>
+        <button class="tab-btn" data-tab="favorites">
+            <i class="fas fa-star"></i> Избранное
+        </button>
         {% endif %}
     </div>
     
     <div class="tab-content">
         <div id="tab-recipes" class="tab-pane active">
+            {% if recipes %}
             <div class="recipe-grid">
                 {% for recipe in recipes %}
-                    {% include 'recipes/recipe_card.html' %}
-                {% empty %}
-                <p class="empty-message">Пользователь пока не добавил рецептов</p>
+                    {% include 'recipes/recipe_card.html' with recipe=recipe %}
                 {% endfor %}
             </div>
+            
+            {% if recipes.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if recipes.has_previous %}
+                    <a href="?page=1&tab=recipes">« Первая</a>
+                    <a href="?page={{ recipes.previous_page_number }}&tab=recipes">‹ Предыдущая</a>
+                {% endif %}
+                
+                <span class="current">
+                    Страница {{ recipes.number }} из {{ recipes.paginator.num_pages }}
+                </span>
+                
+                {% if recipes.has_next %}
+                    <a href="?page={{ recipes.next_page_number }}&tab=recipes">Следующая ›</a>
+                    <a href="?page={{ recipes.paginator.num_pages }}&tab=recipes">Последняя »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <img src="{% static 'images/empty-recipes.svg' %}" alt="Нет рецептов" loading="lazy">
+                <h3>Пользователь пока не добавил рецептов</h3>
+                {% if user == profile_user %}
+                <p>Создайте свой первый рецепт!</p>
+                <a href="{% url 'create_recipe' %}" class="btn btn-primary">Создать рецепт</a>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         
         {% if user == profile_user %}
         <div id="tab-favorites" class="tab-pane">
+            {% if favorite_recipes %}
             <div class="recipe-grid">
                 {% for recipe in favorite_recipes %}
-                    {% include 'recipes/recipe_card.html' %}
-                {% empty %}
-                <p class="empty-message">Нет избранных рецептов</p>
+                    {% include 'recipes/recipe_card.html' with recipe=recipe %}
                 {% endfor %}
             </div>
+            
+            {% if favorite_recipes.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if favorite_recipes.has_previous %}
+                    <a href="?page=1&tab=favorites">« Первая</a>
+                    <a href="?page={{ favorite_recipes.previous_page_number }}&tab=favorites">‹ Предыдущая</a>
+                {% endif %}
+                
+                <span class="current">
+                    Страница {{ favorite_recipes.number }} из {{ favorite_recipes.paginator.num_pages }}
+                </span>
+                
+                {% if favorite_recipes.has_next %}
+                    <a href="?page={{ favorite_recipes.next_page_number }}&tab=favorites">Следующая ›</a>
+                    <a href="?page={{ favorite_recipes.paginator.num_pages }}&tab=favorites">Последняя »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <img src="{% static 'images/empty-favorites.svg' %}" alt="Нет избранных рецептов" loading="lazy">
+                <h3>Нет избранных рецептов</h3>
+                <p>Добавляйте понравившиеся рецепты, нажав на звёздочку ☆</p>
+                <a href="{% url 'index' %}" class="btn btn-primary">Найти рецепты</a>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 </div>
 
+<style>
+.default-avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    border: 5px solid white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.bio {
+    margin: 15px 0;
+    color: #666;
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.profile-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-link {
+    background: none;
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.btn-link:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+@media (max-width: 768px) {
+    .default-avatar-large {
+        width: 100px;
+        height: 100px;
+        font-size: 32px;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .profile-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
 <script>
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const tabId = this.dataset.tab;
-        
-        // Удаляем active у всех кнопок и панелей
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        
-        // Добавляем active текущим элементам
-        this.classList.add('active');
-        document.getElementById(`tab-${tabId}`).classList.add('active');
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    Foodgram.setupTabs();
 });
 </script>
 {% endblock %}
